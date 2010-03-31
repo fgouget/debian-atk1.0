@@ -1,0 +1,12 @@
+diff -urpN atk1.0-1.29.92/docs/Makefile.am atk1.0-1.29.92-patch/docs/Makefile.am
+--- atk1.0-1.29.92/docs/Makefile.am	2009-10-13 12:05:45.000000000 +0300
++++ atk1.0-1.29.92-patch/docs/Makefile.am	2010-03-17 09:42:45.000000000 +0200
+@@ -25,7 +25,7 @@ INCLUDES = 			\
+ 	-I$(top_builddir)	\
+ 	$(DEP_CFLAGS)
+ 
+-GTKDOC_LIBS = $(top_builddir)/atk/libatk-$(ATK_API_VERSION).la
++GTKDOC_LIBS = $(top_builddir)/atk/libatk-$(ATK_API_VERSION).la $(DEP_LIBS)
+ 
+ # gtkdoc-mkdb related varaibles
+ MKDB_OPTIONS =
