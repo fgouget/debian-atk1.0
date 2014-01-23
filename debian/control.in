@@ -2,28 +2,32 @@ Source: atk1.0
 Section: libs
 Priority: optional
 Maintainer: Debian GNOME Maintainers <pkg-gnome-maintainers@lists.alioth.debian.org>
-Uploaders: @GNOME_TEAM@, David Weinehall <tao@debian.org>
-Vcs-Browser: http://svn.debian.org/wsvn/pkg-gnome/desktop/unstable/atk1.0
-Vcs-Svn: svn://svn.debian.org/svn/pkg-gnome/desktop/unstable/atk1.0
-Build-Depends: debhelper (>= 5.0.22),
+Uploaders: @GNOME_TEAM@
+Vcs-Browser: http://anonscm.debian.org/viewvc/pkg-gnome/desktop/unstable/atk1.0
+Vcs-Svn: svn://anonscm.debian.org/svn/pkg-gnome/desktop/unstable/atk1.0
+Build-Depends: debhelper (>= 9),
+               cdbs (>= 0.4.93~),
                pkg-config,
-               libglib2.0-dev (>= 2.0.0),
+               libglib2.0-dev (>= 2.31.2),
                gnome-pkg-tools (>= 0.10),
-               cdbs (>= 0.4.41),
-               gtk-doc-tools,
+               gtk-doc-tools (>= 1.13),
                docbook-xml,
-               autotools-dev
+               autotools-dev,
+               gobject-introspection (>= 0.9.12-4~),
+               libgirepository1.0-dev (>= 0.9.3),
+               gir1.2-glib-2.0
 Build-Depends-Indep: libglib2.0-doc
-Standards-Version: 3.8.4
+Standards-Version: 3.9.3
 Homepage: http://www.gtk.org/
 
 Package: libatk1.0-0
-Section: libs
 Architecture: any
 Depends: ${misc:Depends},
-         ${shlibs:Depends}
-Recommends: libatk1.0-data
-Description: The ATK accessibility toolkit
+         ${shlibs:Depends},
+         libatk1.0-data (= ${source:Version})
+Multi-Arch: same
+Pre-Depends: ${misc:Pre-Depends}
+Description: ATK accessibility toolkit
  ATK is a toolkit providing accessibility interfaces for applications or
  other toolkits. By implementing these interfaces, those other toolkits or
  applications can be used with tools such as screen readers, magnifiers, and
@@ -32,13 +36,12 @@ Description: The ATK accessibility toolkit
  This is the runtime part of ATK, needed to run applications built with it.
 
 Package: libatk1.0-udeb
-XC-Package-Type: udeb
+Package-Type: udeb
 Section: debian-installer
-Priority: optional
 Architecture: any
 Depends: ${misc:Depends},
          ${shlibs:Depends}
-Description: The ATK accessibility toolkit
+Description: ATK accessibility toolkit
  This is a udeb, or a microdeb, for the debian-installer.
  .
  ATK is a toolkit providing accessibility interfaces for applications or
@@ -51,8 +54,8 @@ Description: The ATK accessibility toolkit
 Package: libatk1.0-data
 Section: misc
 Architecture: all
-Depends: ${misc:Depends},
-         libatk1.0-0 (>= ${source:Version})
+Depends: ${misc:Depends}
+Multi-Arch: foreign
 Description: Common files for the ATK accessibility toolkit
  ATK is a toolkit providing accessibility interfaces for applications or
  other toolkits. By implementing these interfaces, those other toolkits or
@@ -66,12 +69,10 @@ Section: libdevel
 Architecture: any
 Depends: ${misc:Depends},
          libatk1.0-0 (= ${binary:Version}),
+         gir1.2-atk-1.0 (= ${binary:Version}),
          pkg-config,
-         libglib2.0-dev (>= 2.4.1-2)
-Replaces: libatk0-dev,
-          libatk-dev
-Conflicts: libatk0-dev,
-           libatk-dev
+         libglib2.0-dev (>= 2.31.2)
+Replaces: gir-repository-dev
 Description: Development files for the ATK accessibility toolkit
  ATK is a toolkit providing accessibility interfaces for applications or
  other toolkits. By implementing these interfaces, those other toolkits or
@@ -87,8 +88,8 @@ Priority: extra
 Architecture: any
 Depends: ${misc:Depends},
          libatk1.0-0 (= ${binary:Version})
-Replaces: libatk1.0-0 (<< 1.11.4-3)
-Description: The ATK libraries and debugging symbols
+Multi-Arch: same
+Description: ATK libraries and debugging symbols
  ATK is a toolkit providing accessibility interfaces for applications or
  other toolkits. By implementing these interfaces, those other toolkits or
  applications can be used with tools such as screen readers, magnifiers, and
@@ -101,12 +102,10 @@ Description: The ATK libraries and debugging symbols
 Package: libatk1.0-doc
 Section: doc
 Architecture: all
-Depends: ${misc:Depends},
-         lynx | www-browser
-Replaces: libatk-doc
-Conflicts: libatk-doc
+Depends: ${misc:Depends}
 Suggests: libglib2.0-doc,
-          libgtk2.0-doc
+          libgtk2.0-doc,
+          devhelp
 Description: Documentation files for the ATK toolkit
  ATK is a toolkit providing accessibility interfaces for applications or
  other toolkits. By implementing these interfaces, those other toolkits or
@@ -116,3 +115,20 @@ Description: Documentation files for the ATK toolkit
  This contains the HTML documentation for the ATK library in
  /usr/share/doc/libatk1.0-doc/ .
 
+Package: gir1.2-atk-1.0
+Section: introspection
+Architecture: any
+Depends: ${misc:Depends},
+         ${shlibs:Depends},
+         ${gir:Depends}
+Replaces: gir1.0-gtk-2.0 (<< 2.22),
+          gobject-introspection-repository
+Conflicts: gir1.0-atk-1.0
+Description: ATK accessibility toolkit (GObject introspection)
+ ATK is a toolkit providing accessibility interfaces for applications or
+ other toolkits. By implementing these interfaces, those other toolkits or
+ applications can be used with tools such as screen readers, magnifiers, and
+ other alternative input devices.
+ .
+ This package can be used by other packages using the GIRepository format to
+ generate dynamic bindings

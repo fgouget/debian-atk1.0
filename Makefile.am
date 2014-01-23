@@ -1,7 +1,7 @@
 # Process this file with automake to create Makefile.in.
-ACLOCAL_AMFLAGS = -I m4
+ACLOCAL_AMFLAGS = -I m4 ${ACLOCAL_FLAGS}
 
-SUBDIRS=atk tests docs po
+SUBDIRS=atk tests docs po build
 
 EXTRA_DIST = 			\
 	MAINTAINERS		\
@@ -10,7 +10,8 @@ EXTRA_DIST = 			\
 	atk.spec.in		\
 	atk.spec		\
 	atk-zip.sh.in   \
-    m4/introspection.m4
+    m4/introspection.m4   \
+	config.h.win32
 
 pkgconfigdir = $(libdir)/pkgconfig
 pkgconfig_DATA = atk.pc

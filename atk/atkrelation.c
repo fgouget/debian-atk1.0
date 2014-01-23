@@ -130,7 +130,7 @@ atk_relation_type_register (const gchar *name)
  *
  * Returns: the string describing the AtkRelationType
  */
-G_CONST_RETURN gchar*
+const gchar*
 atk_relation_type_get_name (AtkRelationType type)
 {
   GTypeClass *type_class;
@@ -282,7 +282,7 @@ atk_relation_get_relation_type (AtkRelation *relation)
  *
  * Gets the target list of @relation
  *
- * Returns: the target list of @relation
+ * Returns: (transfer none): the target list of @relation
  **/
 GPtrArray*
 atk_relation_get_target (AtkRelation *relation)

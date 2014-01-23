@@ -1,3 +1,145 @@
+atk1.0 (2.4.0-2) unstable; urgency=low
+
+  * Bump dependency on libglib2.0-dev to (>= 2.31.2), needed for
+    G_DEPRECATED_FOR. Closes: #666868
+  * Re-add gir1.2-glib-2.0 for now since it's actually not pulled via
+    libglib2.0-dev.
+  * Bump Build-Depends on debhelper to (>= 9) for the compat level bump in the
+    last upload.
+
+ -- Michael Biebl <biebl@debian.org>  Mon, 02 Apr 2012 02:51:41 +0200
+
+atk1.0 (2.4.0-1) unstable; urgency=low
+
+  * New upstream release.
+  * Upload to unstable.
+  * Drop explicit build-dep on gir1.2-glib-2.0, it will be pulled in by
+    the -dev package.
+  * Drop XC- prefix on Package-Type field.
+  * Add --list-missing to DEB_DH_INSTALL_ARGS.
+
+ -- Jordi Mallach <jordi@debian.org>  Sat, 31 Mar 2012 11:30:53 +0200
+
+atk1.0 (2.3.93-1) experimental; urgency=low
+
+  * New upstream release.
+
+ -- Jordi Mallach <jordi@debian.org>  Wed, 07 Mar 2012 14:39:06 +0100
+
+atk1.0 (2.3.91-1) experimental; urgency=low
+
+  [ Josselin Mouette ]
+  * libatk1.0-udeb.install: install the library to the multiarch path. 
+    It avoids duplicating the file in the -dbg package.
+
+  [ Michael Biebl ]
+  * debian/watch: Track .xz tarballs.
+  * Change section of gir1.2-atk-1.0 to introspection.
+
+  [ Jordi Mallach ]
+  * New upstream release.
+  * Drop .a files from -dev package as they appear to be unuseful.
+  * Update Vcs-* URLs.
+  * Bump Standards-Version to 3.9.3, no changes needed.
+
+ -- Jordi Mallach <jordi@debian.org>  Wed, 07 Mar 2012 12:41:55 +0100
+
+atk1.0 (2.2.0-2) unstable; urgency=low
+
+  * debian/libatk1.0-dev.install
+    - Remove libtool .la file.
+  * debian/rules
+    - Remove clean-la.mk include.
+    - Wrap configure flags.
+  * debian/control.in
+    - Remove obsolete Conflicts and Replaces.
+    - Suggest devhelp instead of depending on lynx | www-browser.
+
+ -- Michael Biebl <biebl@debian.org>  Wed, 05 Oct 2011 23:44:07 +0200
+
+atk1.0 (2.2.0-1) unstable; urgency=low
+
+  * New upstream release.
+    - debian/libatk1.0-0.symbols: Adjust symbols file
+
+ -- Laurent Bigonville <bigon@debian.org>  Tue, 27 Sep 2011 21:14:34 +0200
+
+atk1.0 (2.0.1-2) unstable; urgency=low
+
+  [ Laurent Bigonville ]
+  * Transition to multiarch policy (Closes: #631691)
+
+ -- Michael Biebl <biebl@debian.org>  Mon, 04 Jul 2011 00:50:22 +0200
+
+atk1.0 (2.0.1-1) unstable; urgency=low
+
+  * New upstream release.
+  * debian/watch
+    - Don't run uupdate.
+    - Switch to .bz2 tarballs.
+  * debian/control.in
+    - Bump Standards-Version to 3.9.2. No further changes.
+    - Remove article from description synopsis.
+  * Bump debhelper compatility level to 8.
+    - Update Build-Depends on debhelper.
+    - Strip debian/tmp/ from .install files.
+
+ -- Michael Biebl <biebl@debian.org>  Tue, 21 Jun 2011 22:33:22 +0200
+
+atk1.0 (2.0.0-1) unstable; urgency=low
+
+  [ Laurent Bigonville ]
+  * New upstream release
+  * debian/control.in: Bump gtk-doc-tools build-dependency
+  * debian/rules:
+    - Blindly bump the shlibs version. We've got a symbols file anyway and
+      updating the version is error prone.
+    - FTBFS if the .symbols file is not uptodate.
+
+  [ Emilio Pozuelo Monfort ]
+  * debian/rules:
+    debian/control.in:
+    - Let CDBS call dh_girepository for us. Require a recent enough version.
+    - Let it also guess the debug package name.
+
+  [ Josselin Mouette ]
+  * Make the -dev package depend on the gir package.
+  * New upstream stable release.
+  * 01-docs_libs.patch: dropped, merged upstream.
+  * 90-relibtoolize.patch: dropped, useless now.
+  * Update symbols file.
+
+ -- Josselin Mouette <joss@debian.org>  Sun, 10 Apr 2011 12:44:57 +0200
+
+atk1.0 (1.32.0-2) experimental; urgency=low
+
+  * Update to the new gir policy:
+    - Rename gir1.0-atk-1.0 to gir1.2-atk-1.0.
+    - Bump the gobject-introspection build dependency.
+    - Build depend on gir1.2 packages.
+
+ -- Emilio Pozuelo Monfort <pochu@debian.org>  Sat, 11 Dec 2010 19:19:52 +0100
+
+atk1.0 (1.32.0-1) experimental; urgency=low
+
+  [ Josselin Mouette ]
+  * Make libatk1.0-0 depend on libatk1.0-data and remove the opposite
+    dependency. Closes: #599666.
+
+  [ Laurent Bigonville ]
+  * New upstream stable release.
+    - Refresh debian/patches/90-relibtoolize.patch
+  * debian/control.in:
+    - Bump Standards-Version to 3.9.1
+    - Remove duplicate Uploaders
+    - Remove duplicate Section/Priority to please lintian
+  * debian/rules: Bump SHLIB_VERSION version
+  * Switch to dpkg-source 3.0 (quilt) format
+  * Add libatk1.0-0.symbols file
+  * Enable introspection support (Closes: #582385)
+
+ -- Laurent Bigonville <bigon@debian.org>  Mon, 22 Nov 2010 19:38:00 +0100
+
 atk1.0 (1.30.0-1) unstable; urgency=low
 
   * New upstream stable release.

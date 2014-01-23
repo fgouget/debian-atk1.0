@@ -15,7 +15,7 @@ providers of UI information.
 <para>
 Exceptions: when the user interaction is already covered by
 another appropriate interface such as #AtkEditableText (insert/delete
-test, etc.) or #AtkValue (set value) then these actions should not be
+text, etc.) or #AtkValue (set value) then these actions should not be
 exposed by #AtkAction as well.  
 </para>
 <para>
@@ -42,6 +42,9 @@ terminology for #AtkAction names.
 </para>
 
 <!-- ##### SECTION Stability_Level ##### -->
+
+
+<!-- ##### SECTION Image ##### -->
 
 
 <!-- ##### STRUCT AtkAction ##### -->

@@ -73,7 +73,7 @@ atk_streamable_content_get_n_mime_types (AtkStreamableContent *streamable)
  * Returns : a gchar* representing the specified mime type; the caller
  * should not free the character string.
  **/
-G_CONST_RETURN gchar*
+const gchar*
 atk_streamable_content_get_mime_type (AtkStreamableContent *streamable,
                                       gint                 i)
 {
@@ -97,8 +97,8 @@ atk_streamable_content_get_mime_type (AtkStreamableContent *streamable,
  *
  * Gets the content in the specified mime type.
  *
- * Returns: A #GIOChannel which contains the content in the specified mime
- * type.
+ * Returns: (transfer full): A #GIOChannel which contains the content in the
+ * specified mime type.
  **/
 GIOChannel*
 atk_streamable_content_get_stream (AtkStreamableContent *streamable,
@@ -137,7 +137,7 @@ atk_streamable_content_get_stream (AtkStreamableContent *streamable,
  *
  * Since: 1.12
  **/
-gchar*
+const gchar*
 atk_streamable_content_get_uri (AtkStreamableContent *streamable,
 				const gchar          *mime_type)
 {

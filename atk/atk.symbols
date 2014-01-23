@@ -70,6 +70,8 @@
 	atk_hypertext_get_n_links
 	atk_hypertext_get_type
 	atk_hyperlink_state_flags_get_type
+	atk_hyperlink_impl_get_type
+	atk_hyperlink_impl_get_hyperlink
 	atk_image_get_image_description
 	atk_image_get_image_locale
 	atk_image_get_image_position
@@ -177,6 +179,7 @@
 	atk_streamable_content_get_n_mime_types
 	atk_streamable_content_get_stream
 	atk_streamable_content_get_type
+	atk_streamable_content_get_uri
 	atk_table_add_column_selection
 	atk_table_add_row_selection
 	atk_table_get_caption
@@ -238,6 +241,8 @@
 	atk_util_get_type
 	atk_value_get_current_value
 	atk_value_get_maximum_value
+	atk_value_get_minimum_increment
 	atk_value_get_minimum_value
 	atk_value_get_type
 	atk_value_set_current_value
+	atk_window_get_type

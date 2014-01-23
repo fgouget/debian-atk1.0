@@ -20,9 +20,12 @@
 #include "atk.h"
 #include "atkplug.h"
 
-G_DEFINE_TYPE (AtkPlug, atk_plug, ATK_TYPE_OBJECT);
+static void atk_component_interface_init (AtkComponentIface *iface);
 
 static void atk_plug_class_init (AtkPlugClass *klass);
+
+G_DEFINE_TYPE_WITH_CODE (AtkPlug, atk_plug, ATK_TYPE_OBJECT,
+                         G_IMPLEMENT_INTERFACE (ATK_TYPE_COMPONENT, atk_component_interface_init))
 
 static void
 atk_plug_init (AtkPlug* obj)
@@ -33,6 +36,11 @@ static void
 atk_plug_class_init (AtkPlugClass* klass)
 {
   klass->get_object_id = NULL;
+}
+
+static void
+atk_component_interface_init (AtkComponentIface *iface)
+{
 }
 
 AtkObject*
@@ -55,8 +63,15 @@ atk_plug_new (void)
  *
  * Gets the unique ID of an #AtkPlug object, which can be used to embed inside
  * of an #AtkSocket using atk_socket_embed().
+ * Internally, this calls a class function that should be registered by the
+ * IPC layer (eg, at-spi2-atk).  The implementor of an AtkSocket object
+ * should call this function (after atk-bridge is loaded) and pass the value
+ * to the process implementing the AtkPlug into which the AtkSocket is
+ * embedded.
  *
  * Returns: the unique ID for the plug
+ *
+ * Since: 1.30
  **/
 gchar*
 atk_plug_get_id (AtkPlug* obj)
