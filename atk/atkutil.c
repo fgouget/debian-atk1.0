@@ -210,7 +210,18 @@ atk_focus_tracker_notify (AtkObject       *object)
  * @event_type: the type of event for which notification is requested
  *
  * Adds the specified function to the list of functions to be called
- * when an event of type event_type occurs.
+ * when an ATK event of type event_type occurs.
+ *
+ * The format of event_type is the following:
+ *  "ATK:<atk_type>:<atk_event>
+ *
+ * Where "ATK" works as the namespace, <atk_interface> is the name of
+ * the ATK type (interface or object) and <atk_event> is the name of
+ * the signal defined on that interface.
+ *
+ * For example:
+ *   ATK:AtkObject:state-change
+ *   ATK:AtkText:text-selection-changed
  *
  * Returns: added event listener id, or 0 on failure.
  **/
@@ -298,7 +309,8 @@ atk_remove_key_event_listener (guint listener_id)
  *
  * Gets the root accessible container for the current application.
  *
- * Returns: the root accessible container for the current application
+ * Returns: (transfer none): the root accessible container for the current
+ * application
  **/
 AtkObject*
 atk_get_root (void)
@@ -325,7 +337,8 @@ atk_get_root (void)
  * 
  * Since: 1.6
  *
- * Returns: the currently focused object for the current application
+ * Returns: (transfer none): the currently focused object for the current
+ * application
  **/
 AtkObject*
 atk_get_focus_object (void)
@@ -340,7 +353,7 @@ atk_get_focus_object (void)
  *
  * Returns: name string for the GUI toolkit implementing ATK for this application
  **/
-G_CONST_RETURN gchar*
+const gchar*
 atk_get_toolkit_name (void)
 {
   const gchar *retval;
@@ -365,7 +378,7 @@ atk_get_toolkit_name (void)
  *
  * Returns: version string for the GUI toolkit implementing ATK for this application
  **/
-G_CONST_RETURN gchar*
+const gchar*
 atk_get_toolkit_version (void)
 {
   const gchar *retval;
@@ -389,9 +402,10 @@ atk_get_toolkit_version (void)
  * Gets the current version for ATK.
  *
  * Returns: version string for ATK
- **/
-
-G_CONST_RETURN gchar *
+ *
+ * Since: 1.20
+ */
+const gchar *
 atk_get_version (void)
 {
   return VERSION;

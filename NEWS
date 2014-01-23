@@ -1,3 +1,126 @@
+Changes in version 2.4.0:
+=========================
+*
+* Bug 593220: Some typos in atktable signals (docs)
+* Updated Hindi and Simplified Chinese translation
+
+
+Changes in version 2.3.95:
+=========================
+*
+* Bug 671857: Add deprecation attributes to deprecated functions
+* Updated Visual Studio configuration files
+* Updated Khmer, Malayalam and Bengali Translations
+
+Changes in version 2.3.93:
+==========================
+*
+* Revert "Using abstract atk_object_get_name to check accessible-name
+*  notification" change made on 2.3.93
+*  Related to mozilla bug: https://bugzilla.mozilla.org/show_bug.cgi?id=733712
+
+Changes in version 2.3.91:
+==========================
+*
+* Bug 665549: add sanity-check of atk_text_get_text
+* Bug 668441: atk_action_get_keybinding docs are confusing and need
+*  updating
+* Using abstract atk_object_get_name to check accessible-name
+*  notification
+* Updated Belarusian, Estonian, Hungarian, Turkish, Norwegian,
+*  Ukranian and Uyghur translations
+
+
+Changes in version 2.3.3:
+=========================
+*
+* Bug 665870: About reducing accessible-name, accessible-description
+*  change notifications
+* Minor documentation updates
+* Updated Visual Studio configuration files
+* Updated Simplified Chinese and Vietnamese translations
+
+Changes in version 2.2.0:
+=========================
+*
+* Updated Gujarati, Oriya, Assamese, Danish, Portuguese, Czech and
+*  Catalan (Valencian) translations
+
+Changes in version 2.1.92:
+==========================
+*
+* Updated Visual Studio files due AtkWindow addition
+* Bug 649577: atk_add_global_event_listener should only accept ATK events
+* Minor documentation updates
+* Updated German, Basque, Japanese, Serbian, Catalan, Tamil, Punjabi,
+*  Asturian, Italian, Polish, British English, Brazilian Portuguese,
+*  Korean, Telugu and Kannada Translation
+
+Changes in version 2.1.5:
+=========================
+*
+* Bug 638924: Add AtkWindow
+* Fixing out of tree compilation on Win32
+* Update README.txt
+* Fixing release number of the new ATK roles added
+* Updated Traditional Chinese, Indonesian, Bulgarian, French,
+*  Hungarian and Swedish translations
+
+Changes in version 2.1.0:
+=========================
+*
+* Bug 654767: shlib downgrade at update atk-1.32.0 to atk-2.0.1
+* Bug 651343: New ATK Roles
+* Added Leon Fan as maintainer
+* Improved Visual C++ 2010 infrastructure
+* Updated Russian, Slovenian, Persian, Hebrew, Lithuanian, Latvian,
+*  Norwegian, Galician, and Spanish translations
+
+Changes in version 2.0.1:
+=========================
+*
+* Bug 652205: Use const instead G_CONST_RETURN
+* Bug 649307: Clarify AtkPlug and AtkSocket docs
+* Bug 551489: Fix doc of atk_text_get_text_before_offset
+* Bug 588083: Information about return value of some AtkText methods can be clearer
+* Added Alejandro Piñeiro Iglesias as maintainer
+* Updated .gitignore
+* VS 2008/2010 support update
+* New Zulu translation added, Esperanto and Catalan updated
+
+Changes in version 2.0.0:
+=========================
+*
+*Translation update.
+
+Changes in version 1.91.92:
+=========================
+*
+*BGO#638377: Add text_insert, text_remove, and text_update signals
+*Reviewed Serbian Translation
+*Fix introspection for atk_text_get_bounded_ranges
+*Visual C++ 2010 Project Files
+*Updated Spanish translation
+
+Changes in version 1.33.6:
+=========================
+*
+*Returns FALSE on atk_object_add_relationship if it is already included
+*Bug 640574: gobject-introspection annotation and documentation fixes
+*Bug 637663: Added atk_streamable_content_get_uri to atk/atk.symbols
+*Add missing Makefiles to AC_CONFIG_FILES
+*Fixes for the MSVC Project Files
+*Update deprecated autoconf macros and use new libtool syntax
+*Documentation fixes
+*Translation updates
+
+Changes in version 1.32.0:
+=========================
+*
+*Fixes: #630097, #621717, #571622, #617851, #616812.
+*Translation update.
+
+
 Changes in version 1.30.0:
 =========================
 *

@@ -1,5 +1,5 @@
 
-/* Generated data (by glib-mkenums) */
+
 
 #include <atk.h>
 
@@ -113,6 +113,19 @@ atk_role_get_type (void)
       { ATK_ROLE_FORM, "ATK_ROLE_FORM", "form" },
       { ATK_ROLE_LINK, "ATK_ROLE_LINK", "link" },
       { ATK_ROLE_INPUT_METHOD_WINDOW, "ATK_ROLE_INPUT_METHOD_WINDOW", "input-method-window" },
+      { ATK_ROLE_TABLE_ROW, "ATK_ROLE_TABLE_ROW", "table-row" },
+      { ATK_ROLE_TREE_ITEM, "ATK_ROLE_TREE_ITEM", "tree-item" },
+      { ATK_ROLE_DOCUMENT_SPREADSHEET, "ATK_ROLE_DOCUMENT_SPREADSHEET", "document-spreadsheet" },
+      { ATK_ROLE_DOCUMENT_PRESENTATION, "ATK_ROLE_DOCUMENT_PRESENTATION", "document-presentation" },
+      { ATK_ROLE_DOCUMENT_TEXT, "ATK_ROLE_DOCUMENT_TEXT", "document-text" },
+      { ATK_ROLE_DOCUMENT_WEB, "ATK_ROLE_DOCUMENT_WEB", "document-web" },
+      { ATK_ROLE_DOCUMENT_EMAIL, "ATK_ROLE_DOCUMENT_EMAIL", "document-email" },
+      { ATK_ROLE_COMMENT, "ATK_ROLE_COMMENT", "comment" },
+      { ATK_ROLE_LIST_BOX, "ATK_ROLE_LIST_BOX", "list-box" },
+      { ATK_ROLE_GROUPING, "ATK_ROLE_GROUPING", "grouping" },
+      { ATK_ROLE_IMAGE_MAP, "ATK_ROLE_IMAGE_MAP", "image-map" },
+      { ATK_ROLE_NOTIFICATION, "ATK_ROLE_NOTIFICATION", "notification" },
+      { ATK_ROLE_INFO_BAR, "ATK_ROLE_INFO_BAR", "info-bar" },
       { ATK_ROLE_LAST_DEFINED, "ATK_ROLE_LAST_DEFINED", "last-defined" },
       { 0, NULL, NULL }
     };
@@ -336,5 +349,5 @@ atk_coord_type_get_type (void)
   return etype;
 }
 
-/* Generated data ends here */
+
 

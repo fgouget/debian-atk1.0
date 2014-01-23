@@ -30,6 +30,9 @@ enum {
   TEXT_CARET_MOVED,
   TEXT_SELECTION_CHANGED,
   TEXT_ATTRIBUTES_CHANGED,
+  TEXT_INSERT,
+  TEXT_REMOVE,
+  TEXT_UPDATE,
   LAST_SIGNAL
 };
 
@@ -99,9 +102,10 @@ static const char underline[] =
   "none\0"
   "single\0"
   "double\0"
-  "low";
+  "low\0"
+  "error";
 static const guint8 underline_offsets[] = {
-  0, 5, 12, 19
+  0, 5, 12, 19, 23
 };
 
 static void atk_text_base_init (AtkTextIface *class);
@@ -167,7 +171,37 @@ atk_text_base_init (AtkTextIface *class)
 		      atk_marshal_VOID__INT_INT,
 		      G_TYPE_NONE,
 		      2, G_TYPE_INT, G_TYPE_INT);
-      
+
+      atk_text_signals[TEXT_INSERT] =
+	g_signal_new ("text_insert",
+		      ATK_TYPE_TEXT,
+		      G_SIGNAL_RUN_LAST | G_SIGNAL_DETAILED,
+		      0,
+		      (GSignalAccumulator) NULL, NULL,
+		      atk_marshal_VOID__INT_INT_STRING,
+		      G_TYPE_NONE,
+		      3, G_TYPE_INT, G_TYPE_INT, G_TYPE_STRING);
+
+      atk_text_signals[TEXT_REMOVE] =
+	g_signal_new ("text_remove",
+		      ATK_TYPE_TEXT,
+		      G_SIGNAL_RUN_LAST | G_SIGNAL_DETAILED,
+		      0,
+		      (GSignalAccumulator) NULL, NULL,
+		      atk_marshal_VOID__INT_INT_STRING,
+		      G_TYPE_NONE,
+		      3, G_TYPE_INT, G_TYPE_INT, G_TYPE_STRING);
+
+      atk_text_signals[TEXT_UPDATE] =
+	g_signal_new ("text_update",
+		      ATK_TYPE_TEXT,
+		      G_SIGNAL_RUN_LAST | G_SIGNAL_DETAILED,
+		      0,
+		      (GSignalAccumulator) NULL, NULL,
+		      atk_marshal_VOID__INT_INT_INT_STRING,
+		      G_TYPE_NONE,
+		      4, G_TYPE_INT, G_TYPE_INT, G_TYPE_INT, G_TYPE_STRING);
+
       atk_text_signals[TEXT_CARET_MOVED] =
 	g_signal_new ("text_caret_moved",
 		      ATK_TYPE_TEXT,
@@ -203,11 +237,12 @@ atk_text_base_init (AtkTextIface *class)
  * atk_text_get_text:
  * @text: an #AtkText
  * @start_offset: start position
- * @end_offset: end position
+ * @end_offset: end position, or -1 for the end of the string.
  *
  * Gets the specified text.
  *
- * Returns: the text from @start_offset up to, but not including @end_offset.
+ * Returns: a newly allocated string containing the text from @start_offset up
+ *   to, but not including @end_offset. Use g_free() to free the returned string.
  **/
 gchar*
 atk_text_get_text (AtkText      *text,
@@ -220,7 +255,8 @@ atk_text_get_text (AtkText      *text,
 
   iface = ATK_TEXT_GET_IFACE (text);
 
-  if (start_offset < 0 || end_offset < -1)
+  if (start_offset < 0 || end_offset < -1 ||
+      (end_offset != -1 && end_offset < start_offset))
     return NULL;
 
   if (iface->get_text)
@@ -299,9 +335,10 @@ atk_text_get_character_at_offset (AtkText      *text,
  * string is from the line start after the offset to the next line start.
  *
  * If the boundary_type is ATK_TEXT_BOUNDARY_LINE_END the returned string
- * is from the line end at or after the offset to the next line start.
+ * is from the line end at or after the offset to the next line end.
  *
- * Returns: the text after @offset bounded by the specified @boundary_type.
+ * Returns: a newly allocated string containing the text after @offset bounded
+ *   by the specified @boundary_type. Use g_free() to free the returned string.
  **/
 gchar*
 atk_text_get_text_after_offset (AtkText          *text,
@@ -390,7 +427,8 @@ atk_text_get_text_after_offset (AtkText          *text,
  * is from the line end before the offset to the line end at or after
  * the offset.
  *
- * Returns: the text at @offset bounded by the specified @boundary_type.
+ * Returns: a newly allocated string containing the text at @offset bounded by
+ *   the specified @boundary_type. Use g_free() to free the returned string.
  **/
 gchar*
 atk_text_get_text_at_offset (AtkText          *text,
@@ -437,16 +475,16 @@ atk_text_get_text_at_offset (AtkText          *text,
  * offset is returned.
  *
  * If the boundary_type is ATK_TEXT_BOUNDARY_WORD_START the returned string
- * is from the word start before the word start before the offset to 
- * the word start before the offset.
+ * is from the word start before the word start before or at the offset to 
+ * the word start before or at the offset.
  *
  * The returned string will contain the word before the offset if the offset
  * is inside a word and will contain the word before the word before the 
  * offset if the offset is not inside a word.
  *
  * If the boundary_type is ATK_TEXT_BOUNDARY_WORD_END the returned string
- * is from the word end before the word end at or before the offset to the 
- * word end at or before the offset.
+ * is from the word end before the word end before the offset to the word
+ * end before the offset.
  *
  * The returned string will contain the word before the offset if the offset
  * is inside a word or if the offset is not inside a word.
@@ -474,7 +512,8 @@ atk_text_get_text_at_offset (AtkText          *text,
  * is from the line end before the line end before the offset to the 
  * line end before the offset.
  *
- * Returns: the text before @offset bounded by the specified @boundary_type.
+ * Returns: a newly allocated string containing the text before @offset bounded
+ *   by the specified @boundary_type. Use g_free() to free the returned string.
  **/
 gchar*
 atk_text_get_text_before_offset (AtkText          *text,
@@ -598,7 +637,7 @@ atk_text_get_character_extents (AtkText *text,
 }
 
 /**
- *atk_text_get_run_attributes:
+ * atk_text_get_run_attributes:
  *@text: an #AtkText
  *@offset: the offset at which to get the attributes, -1 means the offset of
  *the character to be inserted at the caret location.
@@ -613,9 +652,9 @@ atk_text_get_character_extents (AtkText *text,
  *attributes that can be returned. Note that other attributes may also be 
  *returned.
  *
- *Returns: an #AtkAttributeSet which contains the attributes explicitly set
- *at @offset. This #AtkAttributeSet should be freed by a call to
- *atk_attribute_set_free().
+ *Returns: (transfer full): an #AtkAttributeSet which contains the attributes
+ * explicitly set at @offset. This #AtkAttributeSet should be freed by a call
+ * to atk_attribute_set_free().
  **/
 AtkAttributeSet* 
 atk_text_get_run_attributes (AtkText          *text,
@@ -650,7 +689,7 @@ atk_text_get_run_attributes (AtkText          *text,
 }
 
 /**
- *atk_text_get_default_attributes:
+ * atk_text_get_default_attributes:
  *@text: an #AtkText
  *
  *Creates an #AtkAttributeSet which consists of the default values of
@@ -658,9 +697,9 @@ atk_text_get_run_attributes (AtkText          *text,
  *attributes that can be returned. Note that other attributes may also be 
  *returned.
  *
- *Returns: an #AtkAttributeSet which contains the default values of attributes.
- *at @offset. This #AtkAttributeSet should be freed by a call to
- *atk_attribute_set_free().
+ *Returns: (transfer full): an #AtkAttributeSet which contains the default
+ * values of attributes.  at @offset. this #atkattributeset should be freed by
+ * a call to atk_attribute_set_free().
  */
 AtkAttributeSet* 
 atk_text_get_default_attributes (AtkText          *text)
@@ -771,7 +810,8 @@ atk_text_get_n_selections (AtkText *text)
  *
  * Gets the text from the specified selection.
  *
- * Returns: the selected text.
+ * Returns: a newly allocated string containing the selected text. Use g_free()
+ *   to free the returned string.
  **/
 gchar*
 atk_text_get_selection (AtkText *text, 
@@ -965,7 +1005,7 @@ atk_text_get_range_extents (AtkText          *text,
 /**
  * atk_text_get_bounded_ranges:
  * @text: an #AtkText
- * @rect: An AtkTextRectagle giving the dimensions of the bounding box.
+ * @rect: An AtkTextRectangle giving the dimensions of the bounding box.
  * @coord_type: Specify whether coordinates are relative to the screen or widget window.
  * @x_clip_type: Specify the horizontal clip type.
  * @y_clip_type: Specify the vertical clip type.
@@ -974,8 +1014,8 @@ atk_text_get_range_extents (AtkText          *text,
  *
  * Since: 1.3
  *
- * Returns: Array of AtkTextRange. The last element of the array returned 
- *          by this function will be NULL.
+ * Returns: (array zero-terminated=1): Array of AtkTextRange. The last
+ *          element of the array returned by this function will be NULL.
  **/
 AtkTextRange**
 atk_text_get_bounded_ranges (AtkText          *text,
@@ -1053,7 +1093,7 @@ atk_text_attribute_register (const gchar *name)
  *
  * Returns: a string containing the name; this string should not be freed
  **/
-G_CONST_RETURN gchar*
+const gchar*
 atk_text_attribute_get_name (AtkTextAttribute attr)
 {
   GTypeClass *type_class;
@@ -1149,7 +1189,7 @@ atk_text_attribute_for_name (const gchar *name)
  * Returns: a string containing the value; this string should not be freed;
  * NULL is returned if there are no values maintained for the attr value. 
  **/
-G_CONST_RETURN gchar*
+const gchar*
 atk_text_attribute_get_value (AtkTextAttribute attr,
                               gint             index)
 {
@@ -1364,10 +1404,32 @@ atk_text_free_ranges (AtkTextRange **ranges)
           AtkTextRange *range;
 
           range = *ranges;
-          *ranges++;
+          ranges++;
           g_free (range->content);
           g_free (range);
         }
       g_free (first);
     }
 }
+
+static AtkTextRange *
+atk_text_range_copy (AtkTextRange *src)
+{
+  AtkTextRange *dst = g_new0 (AtkTextRange, 1);
+  dst->bounds = src->bounds;
+  dst->start_offset = src->start_offset;
+  dst->end_offset = src->end_offset;
+  if (src->content)
+    dst->content = g_strdup (src->content);
+  return dst;
+}
+
+static void
+atk_text_range_free (AtkTextRange *range)
+{
+  g_free (range->content);
+  g_free (range);
+}
+
+G_DEFINE_BOXED_TYPE (AtkTextRange, atk_text_range, atk_text_range_copy,
+                     atk_text_range_free)

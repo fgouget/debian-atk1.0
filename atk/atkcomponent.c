@@ -186,7 +186,7 @@ atk_component_contains (AtkComponent    *component,
  * Gets a reference to the accessible child, if one exists, at the
  * coordinate point specified by @x and @y.
  *
- * Returns: a reference to the accessible child, if one exists
+ * Returns: (transfer full): a reference to the accessible child, if one exists
  **/
 AtkObject*
 atk_component_ref_accessible_at_point (AtkComponent    *component,
@@ -588,12 +588,6 @@ atk_component_real_get_size (AtkComponent *component,
   coord_type = ATK_XY_WINDOW;
 
   atk_component_get_extents (component, &x, &y, width, height, coord_type);
-}
-
-static gdouble
-atk_component_real_get_alpha (AtkComponent    *component)
-{
-    return (gdouble) 1.0;
 }
 
 static AtkRectangle *

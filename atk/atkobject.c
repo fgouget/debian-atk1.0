@@ -160,6 +160,19 @@ enum {
   N_("form")
   N_("link")
   N_("input method window")
+  N_("table row")
+  N_("tree item")
+  N_("document spreadsheet")
+  N_("document presentation")
+  N_("document text")
+  N_("document web")
+  N_("document email")
+  N_("comment")
+  N_("list box")
+  N_("grouping")
+  N_("image map")
+  N_("notification")
+  N_("info bar")
 #endif /* 0 */
 
 static const char roles[] =
@@ -250,7 +263,20 @@ static const char roles[] =
   "redundant object\0"
   "form\0"
   "link\0"
-  "input method window";
+  "input method window\0"
+  "table row\0"
+  "tree item\0"
+  "document spreadsheet\0"
+  "document presentation\0"
+  "document text\0"
+  "document web\0"
+  "document email\0"
+  "comment\0"
+  "list box\0"
+  "grouping\0"
+  "image map\0"
+  "notification\0"
+  "info bar\0";
 
 static const guint16 roles_offsets[] = {
   0, 8, 26, 32, 42, 48, 57, 64, 
@@ -263,7 +289,9 @@ static const guint16 roles_offsets[] = {
   585, 605, 622, 641, 650, 655, 669, 678, 
   687, 692, 703, 711, 720, 727, 734, 741, 
   751, 757, 769, 782, 791, 810, 816, 822, 
-  830, 845, 853, 858, 866, 883, 888, 893
+  830, 845, 853, 858, 866, 883, 888, 893,
+  913, 923, 933, 954, 976, 990, 1003, 1018,
+  1026, 1035, 1044, 1054, 1067
 };
 
 /* This is a static assertion */
@@ -285,10 +313,8 @@ static void            atk_object_real_get_property (GObject         *object,
                                                      GValue          *value,
                                                      GParamSpec      *pspec);
 static void            atk_object_finalize          (GObject         *object);
-static G_CONST_RETURN gchar*
-                       atk_object_real_get_name     (AtkObject       *object);
-static G_CONST_RETURN gchar*
-                       atk_object_real_get_description    
+static const gchar*    atk_object_real_get_name     (AtkObject       *object);
+static const gchar*    atk_object_real_get_description
                                                    (AtkObject       *object);
 static AtkObject*      atk_object_real_get_parent  (AtkObject       *object);
 static AtkRole         atk_object_real_get_role    (AtkObject       *object);
@@ -692,7 +718,7 @@ atk_implementor_get_type (void)
  *
  * Returns: a character string representing the accessible name of the object.
  **/
-G_CONST_RETURN gchar*
+const gchar*
 atk_object_get_name (AtkObject *accessible)
 {
   AtkObjectClass *klass;
@@ -716,7 +742,7 @@ atk_object_get_name (AtkObject *accessible)
  * of the accessible.
  *
  **/
-G_CONST_RETURN gchar*
+const gchar*
 atk_object_get_description (AtkObject *accessible)
 {
   AtkObjectClass *klass;
@@ -736,7 +762,8 @@ atk_object_get_description (AtkObject *accessible)
  *
  * Gets the accessible parent of the accessible.
  *
- * Returns: a #AtkObject representing the accessible parent of the accessible
+ * Returns: (transfer none): a #AtkObject representing the accessible parent
+ * of the accessible
  **/
 AtkObject*
 atk_object_get_parent (AtkObject *accessible)
@@ -784,8 +811,8 @@ atk_object_get_n_accessible_children (AtkObject *accessible)
  * The accessible children are 0-based so the first accessible child is
  * at index 0, the second at index 1 and so on.
  *
- * Returns: an #AtkObject representing the specified accessible child
- * of the accessible.
+ * Returns: (transfer full): an #AtkObject representing the specified
+ * accessible child of the accessible.
  **/
 AtkObject*
 atk_object_ref_accessible_child (AtkObject   *accessible,
@@ -808,7 +835,8 @@ atk_object_ref_accessible_child (AtkObject   *accessible,
  *
  * Gets the #AtkRelationSet associated with the object.
  *
- * Returns: an #AtkRelationSet representing the relation set of the object.
+ * Returns: (transfer full): an #AtkRelationSet representing the relation set
+ * of the object.
  **/
 AtkRelationSet*
 atk_object_ref_relation_set (AtkObject *accessible)
@@ -923,7 +951,7 @@ atk_object_get_mdi_zorder (AtkObject *accessible)
  * Gets a reference to the state set of the accessible; the caller must
  * unreference it when it is no longer needed.
  *
- * Returns: a reference to an #AtkStateSet which is the state
+ * Returns: (transfer full): a reference to an #AtkStateSet which is the state
  * set of the accessible
  **/
 AtkStateSet*
@@ -968,13 +996,17 @@ atk_object_get_index_in_parent (AtkObject *accessible)
  * @accessible: an #AtkObject
  * @name: a character string to be set as the accessible name
  *
- * Sets the accessible name of the accessible.
+ * Sets the accessible name of the accessible. You can't set the name
+ * to NULL. This is reserved for the initial value. In this aspect
+ * NULL is similar to ATK_ROLE_UNKNOWN. If you want to set the name to
+ * a empty value you can use "".
  **/
 void
 atk_object_set_name (AtkObject    *accessible,
                      const gchar  *name)
 {
   AtkObjectClass *klass;
+  gboolean notify = FALSE;
 
   g_return_if_fail (ATK_IS_OBJECT (accessible));
   g_return_if_fail (name != NULL);
@@ -982,23 +1014,31 @@ atk_object_set_name (AtkObject    *accessible,
   klass = ATK_OBJECT_GET_CLASS (accessible);
   if (klass->set_name)
     {
+      /* Do not notify for initial name setting. See bug 665870 */
+      notify = (accessible->name != NULL);
+
       (klass->set_name) (accessible, name);
-      g_object_notify (G_OBJECT (accessible), atk_object_name_property_name);
+      if (notify)
+        g_object_notify (G_OBJECT (accessible), atk_object_name_property_name);
     }
 }
 
 /**
  * atk_object_set_description:
  * @accessible: an #AtkObject
- * @description : a character string to be set as the accessible description
+ * @description: a character string to be set as the accessible description
  *
- * Sets the accessible description of the accessible.
+ * Sets the accessible description of the accessible. You can't set
+ * the description to NULL. This is reserved for the initial value. In
+ * this aspect NULL is similar to ATK_ROLE_UNKNOWN. If you want to set
+ * the name to a empty value you can use "".
  **/
 void
 atk_object_set_description (AtkObject   *accessible,
                             const gchar *description)
 {
   AtkObjectClass *klass;
+  gboolean notify = FALSE;
 
   g_return_if_fail (ATK_IS_OBJECT (accessible));
   g_return_if_fail (description != NULL);
@@ -1006,15 +1046,20 @@ atk_object_set_description (AtkObject   *accessible,
   klass = ATK_OBJECT_GET_CLASS (accessible);
   if (klass->set_description)
     {
+      /* Do not notify for initial name setting. See bug 665870 */
+      notify = (accessible->description != NULL);
+
       (klass->set_description) (accessible, description);
-      g_object_notify (G_OBJECT (accessible), atk_object_name_property_description);
+      if (notify)
+        g_object_notify (G_OBJECT (accessible),
+                         atk_object_name_property_description);
     }
 }
 
 /**
  * atk_object_set_parent:
  * @accessible: an #AtkObject
- * @parent : an #AtkObject to be set as the accessible parent
+ * @parent: an #AtkObject to be set as the accessible parent
  *
  * Sets the accessible parent of the accessible.
  **/
@@ -1037,7 +1082,7 @@ atk_object_set_parent (AtkObject *accessible,
 /**
  * atk_object_set_role:
  * @accessible: an #AtkObject
- * @role : an #AtkRole to be set as the role
+ * @role: an #AtkRole to be set as the role
  *
  * Sets the role of the accessible.
  **/
@@ -1067,7 +1112,7 @@ atk_object_set_role (AtkObject *accessible,
 /**
  * atk_object_connect_property_change_handler:
  * @accessible: an #AtkObject
- * @handler : a function to be called when a property changes its value
+ * @handler: a function to be called when a property changes its value
  *
  * Specifies a function to be called when a property changes value.
  *
@@ -1093,7 +1138,7 @@ atk_object_connect_property_change_handler (AtkObject *accessible,
 /**
  * atk_object_remove_property_change_handler:
  * @accessible: an #AtkObject
- * @handler_id : a guint which identifies the handler to be removed.
+ * @handler_id: a guint which identifies the handler to be removed.
  * 
  * Removes a property change handler.
  **/
@@ -1114,7 +1159,7 @@ atk_object_remove_property_change_handler  (AtkObject *accessible,
  * atk_object_notify_state_change:
  * @accessible: an #AtkObject
  * @state: an #AtkState whose state is changed
- * @value : a gboolean which indicates whether the state is being set on or off
+ * @value: a gboolean which indicates whether the state is being set on or off
  * 
  * Emits a state-change signal for the specified state. 
  **/
@@ -1123,7 +1168,7 @@ atk_object_notify_state_change (AtkObject *accessible,
                                 AtkState  state,
                                 gboolean  value)
 {
-  G_CONST_RETURN gchar* name;
+  const gchar* name;
 
   g_return_if_fail (ATK_IS_OBJECT (accessible));
 
@@ -1141,7 +1186,8 @@ atk_object_notify_state_change (AtkObject *accessible,
  * Gets a reference to an object's #AtkObject implementation, if
  * the object implements #AtkObjectIface
  *
- * Returns: a reference to an object's #AtkObject implementation
+ * Returns: (transfer full): a reference to an object's #AtkObject
+ * implementation
  */
 AtkObject *
 atk_implementor_ref_accessible (AtkImplementor *implementor)
@@ -1173,8 +1219,9 @@ atk_implementor_ref_accessible (AtkImplementor *implementor)
  *
  * Since: 1.12
  *
- * Returns: an #AtkAttributeSet consisting of all explicit properties/annotations applied to 
- * the object, or an empty set if the object has no name-value pair attributes assigned to it.
+ * Returns: (transfer none): an #AtkAttributeSet consisting of all explicit
+ * properties/annotations applied to the object, or an empty set if the object
+ * has no name-value pair attributes assigned to it.
  */
 AtkAttributeSet *
 atk_object_get_attributes (AtkObject                  *accessible)
@@ -1319,13 +1366,13 @@ atk_object_finalize (GObject *object)
   G_OBJECT_CLASS (parent_class)->finalize (object);
 }
 
-static G_CONST_RETURN gchar*
+static const gchar*
 atk_object_real_get_name (AtkObject *object)
 {
   return object->name;
 }
 
-static G_CONST_RETURN gchar*
+static const gchar*
 atk_object_real_get_description (AtkObject *object)
 {
   return object->description;
@@ -1487,7 +1534,7 @@ atk_object_notify (GObject     *obj,
  *
  * Returns: the string describing the AtkRole
  */
-G_CONST_RETURN gchar*
+const gchar*
 atk_role_get_name (AtkRole role)
 {
   if (role >= 0 && role < ATK_ROLE_LAST_DEFINED)
@@ -1514,7 +1561,7 @@ atk_role_get_name (AtkRole role)
  *
  * Returns: the localized string describing the AtkRole
  **/
-G_CONST_RETURN gchar*
+const gchar*
 atk_role_get_localized_name (AtkRole role)
 {
   gettext_initialization ();
@@ -1588,6 +1635,9 @@ atk_object_add_relationship (AtkObject       *object,
 
   g_return_val_if_fail (ATK_IS_OBJECT (object), FALSE);
   g_return_val_if_fail (ATK_IS_OBJECT (target), FALSE);
+
+  if (atk_relation_set_contains (object->relation_set, relationship))
+    return FALSE;
 
   array[0] = target;
   relation = atk_relation_new (array, 1, relationship);

@@ -93,7 +93,7 @@ atk_document_base_init (AtkDocumentIface *class)
  *
  * Returns: a string indicating the document type
  **/
-G_CONST_RETURN gchar*
+const gchar*
 atk_document_get_document_type (AtkDocument *document)
 {
   AtkDocumentIface *iface;
@@ -120,7 +120,7 @@ atk_document_get_document_type (AtkDocument *document)
  * up to the caller to check atk_document_get_type to determine
  * how to cast this pointer.
  *
- * Returns: a %gpointer that points to an instance of the DOM.
+ * Returns: (transfer none): a %gpointer that points to an instance of the DOM.
  **/
 gpointer 
 atk_document_get_document (AtkDocument *document)
@@ -155,7 +155,7 @@ atk_document_get_document (AtkDocument *document)
  *          locale of the document content as a whole, or NULL if
  *          the document content does not specify a locale.
  **/
-G_CONST_RETURN gchar *
+const gchar *
 atk_document_get_locale (AtkDocument *document)
 {
   AtkDocumentIface *iface;
@@ -184,7 +184,7 @@ atk_document_get_locale (AtkDocument *document)
  *
  * Since: 1.12
  *
- * Returns: An AtkAttributeSet containing the explicitly
+ * Returns: (transfer none): An AtkAttributeSet containing the explicitly
  *          set name-value-pair attributes associated with this document
  *          as a whole.
  **/
@@ -219,7 +219,7 @@ atk_document_get_attributes (AtkDocument *document)
  *    document, or NULL if a value for #attribute_name has not been specified
  *    for this document.
  */
-G_CONST_RETURN gchar *
+const gchar *
 atk_document_get_attribute_value (AtkDocument *document, 
 				  const gchar *attribute_name)
 {

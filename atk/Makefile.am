@@ -30,7 +30,7 @@ libatk_1_0_la_LIBADD = \
        $(DEP_LIBS)     \
        $(INTLLIBS)
 
-libatk_1_0_la_SOURCES = 	\
+atk_sources = 	\
 	atkaction.c		\
 	atkcomponent.c		\
 	atkdocument.c		\
@@ -57,7 +57,11 @@ libatk_1_0_la_SOURCES = 	\
 	atktext.c		\
 	atkutil.c		\
 	atkmisc.c		\
-	atkvalue.c		\
+	atkvalue.c \
+	atkwindow.c
+
+libatk_1_0_la_SOURCES = 	\
+	$(atk_sources)		\
 	atk-enum-types.c
 
 libatkincludedir=$(includedir)/atk-1.0/atk
@@ -91,7 +95,8 @@ atk_headers = \
         atktext.h		\
         atkutil.h		\
         atkmisc.h		\
-        atkvalue.h
+        atkvalue.h \
+        atkwindow.h
 
 libatkinclude_HEADERS =		\
 	$(atk_headers)		\
@@ -105,7 +110,7 @@ BUILT_SOURCES = atkmarshal.h atkmarshal.c atk-enum-types.h atk-enum-types.c
 atkmarshal.h: stamp-atkmarshal.h
 	@true
 stamp-atkmarshal.h: @REBUILD@ atkmarshal.list
-	$(GLIB_GENMARSHAL) --prefix=atk_marshal $(srcdir)/atkmarshal.list --header >> xgen-gmh \
+	$(AM_V_GEN) $(GLIB_GENMARSHAL) --prefix=atk_marshal $(srcdir)/atkmarshal.list --header >> xgen-gmh \
 	&& (cmp -s xgen-gmh atkmarshal.h || cp xgen-gmh atkmarshal.h) \
 	&& rm -f xgen-gmh xgen-gmh~					\
 	&& echo timestamp > $(@F)
@@ -113,7 +118,7 @@ stamp-atkmarshal.h: @REBUILD@ atkmarshal.list
 atkmarshal.c: stamp-atkmarshal.c
 	@true
 stamp-atkmarshal.c: @REBUILD@ atkmarshal.list
-	$(GLIB_GENMARSHAL) --prefix=atk_marshal $(srcdir)/atkmarshal.list --body >> xgen-gmc \
+	$(AM_V_GEN) $(GLIB_GENMARSHAL) --prefix=atk_marshal $(srcdir)/atkmarshal.list --body >> xgen-gmc \
 	&& (cmp -s xgen-gmc atkmarshal.c || cp xgen-gmc atkmarshal.c) \
 	&& rm -f xgen-gmc xgen-gmc~					\
 	&& echo timestamp > $(@F)
@@ -121,7 +126,7 @@ stamp-atkmarshal.c: @REBUILD@ atkmarshal.list
 atk-enum-types.h: s-enum-types-h
 	@true
 s-enum-types-h: @REBUILD@ $(atk_headers) Makefile
-	( cd $(srcdir) && $(GLIB_MKENUMS) \
+	$(AM_V_GEN) ( cd $(srcdir) && $(GLIB_MKENUMS) \
 			--fhead "#if defined(ATK_DISABLE_SINGLE_INCLUDES) && !defined (__ATK_H_INSIDE__) && !defined (ATK_COMPILATION)\n#error \"Only <atk/atk.h> can be included directly.\"\n#endif\n\n#ifndef __ATK_ENUM_TYPES_H__\n#define __ATK_ENUM_TYPES_H__\n\n#include <glib-object.h>\n\nG_BEGIN_DECLS\n" \
 			--fprod "/* enumerations from \"@filename@\" */\n" \
 			--vhead "GType @enum_name@_get_type (void);\n#define ATK_TYPE_@ENUMSHORT@ (@enum_name@_get_type())\n"         \
@@ -134,7 +139,7 @@ s-enum-types-h: @REBUILD@ $(atk_headers) Makefile
 atk-enum-types.c: s-enum-types-c
 	@true
 s-enum-types-c: @REBUILD@ $(atk_headers) Makefile
-	( cd $(srcdir) && $(GLIB_MKENUMS) \
+	$(AM_V_GEN) ( cd $(srcdir) && $(GLIB_MKENUMS) \
 			--fhead "#include <atk.h>" \
 			--fprod "\n/* enumerations from \"@filename@\" */" \
 			--vhead "GType\n@enum_name@_get_type (void)\n{\n  static GType etype = 0;\n  if (etype == 0) {\n    static const G@Type@Value values[] = {"     \
@@ -148,33 +153,39 @@ s-enum-types-c: @REBUILD@ $(atk_headers) Makefile
 
 if HAVE_INTROSPECTION
 introspection_sources = \
-    $(libatkinclude_HEADERS) \
-    $(libatk_1_0_la_SOURCES)
+    $(atk_headers)	\
+    $(atk_sources)
+introspection_generated_sources = \
+    atk-enum-types.c	\
+    atk-enum-types.h
 
-Atk-1.0.gir: libatk-1.0.la
+Atk-1.0.gir: libatk-1.0.la Makefile
 Atk_1_0_gir_INCLUDES = GObject-2.0
 Atk_1_0_gir_CFLAGS = $(INCLUDES)
 Atk_1_0_gir_LIBS = libatk-1.0.la
-Atk_1_0_gir_FILES = $(addprefix $(srcdir)/, $(introspection_sources))
+Atk_1_0_gir_SCANNERFLAGS = --pkg-export atk --warn-all
+Atk_1_0_gir_FILES = \
+    $(addprefix $(srcdir)/, $(introspection_sources))	\
+    $(introspection_generated_sources)
 INTROSPECTION_GIRS += Atk-1.0.gir
 
 girdir = $(datadir)/gir-1.0
-dist_gir_DATA = $(INTROSPECTION_GIRS)
+gir_DATA = $(INTROSPECTION_GIRS)
 
 typelibsdir = $(libdir)/girepository-1.0
 typelibs_DATA = $(INTROSPECTION_GIRS:.gir=.typelib)
 
-CLEANFILES += $(dist_gir_DATA) $(typelibs_DATA)
+CLEANFILES += $(gir_DATA) $(typelibs_DATA)
 endif
 
 # ---------- Win32 stuff ----------
 
 if OS_WIN32
-libatk_1_0_la_LDFLAGS += -export-symbols $(srcdir)/atk.def -no-undefined -Wl,atk-win32-res.o
+libatk_1_0_la_LDFLAGS += -export-symbols atk.def -no-undefined -Wl,atk-win32-res.o
 libatk_1_0_la_DEPENDENCIES = atk-win32-res.o atk.def
 
 install-def-file:
-	$(INSTALL) $(srcdir)/atk.def $(DESTDIR)$(libdir)/atk-1.0.def
+	$(INSTALL) atk.def $(DESTDIR)$(libdir)/atk-1.0.def
 uninstall-def-file:
 	-rm $(DESTDIR)$(libdir)/atk-1.0.def
 else
@@ -205,7 +216,39 @@ atk-$(ATK_API_VERSION).lib: libatk-$(ATK_API_VERSION).la atk.def
 	lib -machine:$(LIB_EXE_MACHINE_FLAG) -name:libatk-$(ATK_API_VERSION)-$(LT_CURRENT_MINUS_AGE).dll -def:atk.def -out:$@
 
 
-EXTRA_DIST = atk.symbols atk.rc.in atkmarshal.list atkintl.h
+EXTRA_DIST = atk.symbols atk.rc.in atkmarshal.list atkintl.h atk.rc
+
+dist-hook: ../build/win32/vs9/atk.vcproj ../build/win32/vs10/atk.vcxproj ../build/win32/vs10/atk.vcxproj.filters
+
+../build/win32/vs9/atk.vcproj: ../build/win32/vs9/atk.vcprojin
+	for F in $(libatk_1_0_la_SOURCES); do \
+		case $$F in \
+		*.c) echo '   <File RelativePath="..\..\..\atk\'$$F'" />' \
+		     ;; \
+		esac; \
+	done >libatk.sourcefiles
+	$(CPP) -P - <$(top_srcdir)/build/win32/vs9/atk.vcprojin >$@
+	rm libatk.sourcefiles
+	
+../build/win32/vs10/atk.vcxproj: ../build/win32/vs10/atk.vcxprojin
+	for F in $(libatk_1_0_la_SOURCES); do \
+		case $$F in \
+		*.c) echo '    <ClCompile Include="..\..\..\atk\'$$F'" />' \
+		     ;; \
+		esac; \
+	done >libatk.vs10.sourcefiles
+	$(CPP) -P - <$(top_srcdir)/build/win32/vs10/atk.vcxprojin >$@
+	rm libatk.vs10.sourcefiles
+	
+../build/win32/vs10/atk.vcxproj.filters: ../build/win32/vs10/atk.vcxproj.filtersin
+	for F in $(libatk_1_0_la_SOURCES); do \
+		case $$F in \
+		*.c) echo '    <ClCompile Include="..\..\..\atk\'$$F'"><Filter>Source Files</Filter></ClCompile>' \
+		     ;; \
+		esac; \
+	done >libatk.vs10.sourcefiles.filters
+	$(CPP) -P - <$(top_srcdir)/build/win32/vs10/atk.vcxproj.filtersin >$@
+	rm libatk.vs10.sourcefiles.filters
 
 DISTCLEANFILES = \
   stamp-atkmarshal.h stamp-atkmarshal.c \
