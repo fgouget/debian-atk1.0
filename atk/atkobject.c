@@ -17,24 +17,47 @@
  * Boston, MA 02111-1307, USA.
  */
 
+#include "config.h"
+
 #include <string.h>
+#include <locale.h>
 
 #include <glib-object.h>
-
-#ifdef G_OS_WIN32
-#define STRICT
-#include <windows.h>
-#undef STRICT
-#undef FOCUS_EVENT		/* <windows.h> pollutes the namespace
-				 * like a six hundred pound gorilla */
-#endif
+#include <glib/gi18n-lib.h>
 
 #include "atk.h"
 #include "atkmarshal.h"
-#include "atk-enum-types.h"
-#include "atkintl.h"
+#include "atkprivate.h"
 
-static GPtrArray *extra_roles = NULL;
+/**
+ * SECTION:atkobject
+ * @Short_description: The base object class for the Accessibility Toolkit API.
+ * @Title:AtkObject
+ *
+ * This class is the primary class for accessibility support via the
+ * Accessibility ToolKit (ATK).  Objects which are instances of
+ * #AtkObject (or instances of AtkObject-derived types) are queried
+ * for properties which relate basic (and generic) properties of a UI
+ * component such as name and description.  Instances of #AtkObject
+ * may also be queried as to whether they implement other ATK
+ * interfaces (e.g. #AtkAction, #AtkComponent, etc.), as appropriate
+ * to the role which a given UI component plays in a user interface.
+ *
+ * All UI components in an application which provide useful
+ * information or services to the user must provide corresponding
+ * #AtkObject instances on request (in GTK+, for instance, usually on
+ * a call to #gtk_widget_get_accessible ()), either via ATK support
+ * built into the toolkit for the widget class or ancestor class, or
+ * in the case of custom widgets, if the inherited #AtkObject
+ * implementation is insufficient, via instances of a new #AtkObject
+ * subclass.
+ *
+ * See also: #AtkObjectFactory, #AtkRegistry.  (GTK+ users see also
+ * #GtkAccessible).
+ *
+ */
+
+static GPtrArray *role_names = NULL;
 
 enum
 {
@@ -173,129 +196,23 @@ enum {
   N_("image map")
   N_("notification")
   N_("info bar")
+  N_("level bar")
+  N_("title bar")
+  N_("block quote")
+  N_("audio")
+  N_("video")
+  N_("definition")
+  N_("article")
+  N_("landmark")
+  N_("log")
+  N_("marquee")
+  N_("math")
+  N_("rating")
+  N_("timer")
+  N_("description list")
+  N_("description term")
+  N_("description value")
 #endif /* 0 */
-
-static const char roles[] =
-  "invalid\0"
-  "accelerator label\0"
-  "alert\0"
-  "animation\0"
-  "arrow\0"
-  "calendar\0"
-  "canvas\0"
-  "check box\0"
-  "check menu item\0"
-  "color chooser\0"
-  "column header\0"
-  "combo box\0"
-  "dateeditor\0"
-  "desktop icon\0"
-  "desktop frame\0"
-  "dial\0"
-  "dialog\0"
-  "directory pane\0"
-  "drawing area\0"
-  "file chooser\0"
-  "filler\0"
-  "fontchooser\0"
-  "frame\0"
-  "glass pane\0"
-  "html container\0"
-  "icon\0"
-  "image\0"
-  "internal frame\0"
-  "label\0"
-  "layered pane\0"
-  "list\0"
-  "list item\0"
-  "menu\0"
-  "menu bar\0"
-  "menu item\0"
-  "option pane\0"
-  "page tab\0"
-  "page tab list\0"
-  "panel\0"
-  "password text\0"
-  "popup menu\0"
-  "progress bar\0"
-  "push button\0"
-  "radio button\0"
-  "radio menu item\0"
-  "root pane\0"
-  "row header\0"
-  "scroll bar\0"
-  "scroll pane\0"
-  "separator\0"
-  "slider\0"
-  "split pane\0"
-  "spin button\0"
-  "statusbar\0"
-  "table\0"
-  "table cell\0"
-  "table column header\0"
-  "table row header\0"
-  "tear off menu item\0"
-  "terminal\0"
-  "text\0"
-  "toggle button\0"
-  "tool bar\0"
-  "tool tip\0"
-  "tree\0"
-  "tree table\0"
-  "unknown\0"
-  "viewport\0"
-  "window\0"
-  "header\0"
-  "footer\0"
-  "paragraph\0"
-  "ruler\0"
-  "application\0"
-  "autocomplete\0"
-  "edit bar\0"
-  "embedded component\0"
-  "entry\0"
-  "chart\0"
-  "caption\0"
-  "document frame\0"
-  "heading\0"
-  "page\0"
-  "section\0"
-  "redundant object\0"
-  "form\0"
-  "link\0"
-  "input method window\0"
-  "table row\0"
-  "tree item\0"
-  "document spreadsheet\0"
-  "document presentation\0"
-  "document text\0"
-  "document web\0"
-  "document email\0"
-  "comment\0"
-  "list box\0"
-  "grouping\0"
-  "image map\0"
-  "notification\0"
-  "info bar\0";
-
-static const guint16 roles_offsets[] = {
-  0, 8, 26, 32, 42, 48, 57, 64, 
-  74, 90, 104, 118, 128, 139, 152, 166, 
-  171, 178, 193, 206, 219, 226, 238, 244, 
-  255, 270, 275, 281, 296, 302, 315, 320, 
-  330, 335, 344, 354, 366, 375, 389, 395, 
-  409, 420, 433, 445, 458, 474, 484, 495, 
-  506, 518, 528, 535, 546, 558, 568, 574, 
-  585, 605, 622, 641, 650, 655, 669, 678, 
-  687, 692, 703, 711, 720, 727, 734, 741, 
-  751, 757, 769, 782, 791, 810, 816, 822, 
-  830, 845, 853, 858, 866, 883, 888, 893,
-  913, 923, 933, 954, 976, 990, 1003, 1018,
-  1026, 1035, 1044, 1054, 1067
-};
-
-/* This is a static assertion */
-typedef int _assert_roles_num[(G_N_ELEMENTS (roles_offsets) == ATK_ROLE_LAST_DEFINED) ? 1 : -1];
 
 static void            atk_object_class_init        (AtkObjectClass  *klass);
 static void            atk_object_init              (AtkObject       *accessible,
@@ -330,16 +247,10 @@ static void            atk_object_real_set_parent  (AtkObject       *object,
                                                     AtkObject       *parent);
 static void            atk_object_real_set_role    (AtkObject       *object,
                                                     AtkRole         role);
-static guint           atk_object_real_connect_property_change_handler
-                                                   (AtkObject       *obj,
-                                                    AtkPropertyChangeHandler
-                                                                    *handler);
-static void            atk_object_real_remove_property_change_handler
-                                                   (AtkObject       *obj,
-                                                    guint           handler_id);
 static void            atk_object_notify           (GObject         *obj,
                                                     GParamSpec      *pspec);
-
+static const gchar*    atk_object_real_get_object_locale
+                                                   (AtkObject       *object);
 
 static guint atk_object_signals[LAST_SIGNAL] = { 0, };
 
@@ -361,83 +272,33 @@ static const gchar* const atk_object_name_property_table_summary = "accessible-t
 static const gchar* const atk_object_name_property_table_caption_object = "accessible-table-caption-object";
 static const gchar* const atk_object_name_property_hypertext_num_links = "accessible-hypertext-nlinks";
 
-#ifdef G_OS_WIN32
-
-static HMODULE atk_dll;
-
-BOOL WINAPI
-DllMain (HINSTANCE hinstDLL,
-	 DWORD     fdwReason,
-	 LPVOID    lpvReserved)
-{
-  switch (fdwReason)
-    {
-    case DLL_PROCESS_ATTACH:
-      atk_dll = (HMODULE) hinstDLL;
-      break;
-    }
-
-  return TRUE;
-}
-
-static const char *
-get_atk_locale_dir (void)
-{
-  static gchar *atk_localedir = NULL;
-
-  if (!atk_localedir)
-    {
-      const gchar *p;
-      gchar *root, *temp;
-      
-      /* ATK_LOCALEDIR might end in either /lib/locale or
-       * /share/locale. Scan for that slash.
-       */
-      p = ATK_LOCALEDIR + strlen (ATK_LOCALEDIR);
-      while (*--p != '/')
-	;
-      while (*--p != '/')
-	;
-
-      root = g_win32_get_package_installation_directory_of_module (atk_dll);
-      temp = g_build_filename (root, p, NULL);
-      g_free (root);
-
-      /* atk_localedir is passed to bindtextdomain() which isn't
-       * UTF-8-aware.
-       */
-      atk_localedir = g_win32_locale_filename_from_utf8 (temp);
-      g_free (temp);
-    }
-  return atk_localedir;
-}
-
-#undef ATK_LOCALEDIR
-
-#define ATK_LOCALEDIR get_atk_locale_dir()
-
-#endif
-
 static void
-gettext_initialization (void)
+initialize_role_names ()
 {
-#ifdef ENABLE_NLS
-  static gboolean gettext_initialized = FALSE;
+  GTypeClass *enum_class;
+  GEnumValue *enum_value;
+  int i;
+  gchar *role_name = NULL;
 
-  if (!gettext_initialized)
+  if (role_names)
+    return;
+
+  role_names = g_ptr_array_new ();
+  enum_class = g_type_class_ref (ATK_TYPE_ROLE);
+  if (!G_IS_ENUM_CLASS(enum_class))
+    return;
+
+  for (i = 0; i < ATK_ROLE_LAST_DEFINED; i++)
     {
-      const char *dir = g_getenv ("ATK_ALT_LOCALEDIR");
-
-      gettext_initialized = TRUE;
-      if (dir == NULL)
-        dir = ATK_LOCALEDIR;
-
-      bindtextdomain (GETTEXT_PACKAGE, dir);
-#ifdef HAVE_BIND_TEXTDOMAIN_CODESET
-      bind_textdomain_codeset (GETTEXT_PACKAGE, "UTF-8");
-#endif
+      enum_value = g_enum_get_value (G_ENUM_CLASS (enum_class), i);
+      role_name = g_strdup (enum_value->value_nick);
+      // We want the role names to be in the format "check button" and not "check-button"
+      _compact_name (role_name);
+      g_ptr_array_add (role_names, role_name);
     }
-#endif
+
+  g_type_class_unref (enum_class);
+
 }
 
 GType
@@ -492,10 +353,7 @@ atk_object_class_init (AtkObjectClass *klass)
   klass->set_description = atk_object_real_set_description;
   klass->set_parent = atk_object_real_set_parent;
   klass->set_role = atk_object_real_set_role;
-  klass->connect_property_change_handler = 
-         atk_object_real_connect_property_change_handler;
-  klass->remove_property_change_handler = 
-         atk_object_real_remove_property_change_handler;
+  klass->get_object_locale = atk_object_real_get_object_locale;
 
   /*
    * We do not define default signal handlers here
@@ -506,7 +364,7 @@ atk_object_class_init (AtkObjectClass *klass)
   klass->visible_data_changed = NULL;
   klass->active_descendant_changed = NULL;
 
-  gettext_initialization ();
+  _gettext_initialization ();
 
   g_object_class_install_property (gobject_class,
                                    PROP_NAME,
@@ -526,9 +384,19 @@ atk_object_class_init (AtkObjectClass *klass)
                                    PROP_PARENT,
                                    g_param_spec_object (atk_object_name_property_parent,
                                                         _("Accessible Parent"),
-                                                        _("Is used to notify that the parent has changed"),
+                                                        _("Parent of the current accessible as returned by atk_object_get_parent()"),
                                                         ATK_TYPE_OBJECT,
                                                         G_PARAM_READWRITE));
+
+  /**
+   * AtkObject:accessible-value:
+   *
+   * Numeric value of this object, in case being and AtkValue.
+   *
+   * Deprecated: Since 2.12. Use atk_value_get_value_and_text() to get
+   * the value, and value-changed signal to be notified on their value
+   * changes.
+   */
   g_object_class_install_property (gobject_class,
                                    PROP_VALUE,
                                    g_param_spec_double (atk_object_name_property_value,
@@ -545,7 +413,7 @@ atk_object_class_init (AtkObjectClass *klass)
                                                         _("The accessible role of this object"),
                                                         0,
                                                         G_MAXINT,
-                                                        0,
+                                                        ATK_ROLE_UNKNOWN,
                                                         G_PARAM_READWRITE));
   g_object_class_install_property (gobject_class,
                                    PROP_LAYER,
@@ -565,6 +433,14 @@ atk_object_class_init (AtkObjectClass *klass)
                                                         G_MAXINT,
                                                         G_MININT,
                                                         G_PARAM_READABLE));
+
+  /**
+   * AtkObject:accessible-table-caption:
+   *
+   * Table caption.
+   *
+   * Deprecated: Since 1.3. Use table-caption-object instead.
+   */
   g_object_class_install_property (gobject_class,
                                    PROP_TABLE_CAPTION,
                                    g_param_spec_string (atk_object_name_property_table_caption,
@@ -572,6 +448,14 @@ atk_object_class_init (AtkObjectClass *klass)
                                                         _("Is used to notify that the table caption has changed; this property should not be used. accessible-table-caption-object should be used instead"),
                                                         NULL,
                                                         G_PARAM_READWRITE));
+  /**
+   * AtkObject:accessible-table-column-header:
+   *
+   * Accessible table column header.
+   *
+   * Deprecated: Since 2.12. Use atk_table_get_column_header() and
+   * atk_table_set_column_header() instead.
+   */
   g_object_class_install_property (gobject_class,
                                    PROP_TABLE_COLUMN_HEADER,
                                    g_param_spec_object (atk_object_name_property_table_column_header,
@@ -579,6 +463,15 @@ atk_object_class_init (AtkObjectClass *klass)
                                                         _("Is used to notify that the table column header has changed"),
                                                         ATK_TYPE_OBJECT,
                                                         G_PARAM_READWRITE));
+
+  /**
+   * AtkObject:accessible-table-column-description:
+   *
+   * Accessible table column description.
+   *
+   * Deprecated: Since 2.12. Use atk_table_get_column_description()
+   * and atk_table_set_column_description() instead.
+   */
   g_object_class_install_property (gobject_class,
                                    PROP_TABLE_COLUMN_DESCRIPTION,
                                    g_param_spec_string (atk_object_name_property_table_column_description,
@@ -586,6 +479,15 @@ atk_object_class_init (AtkObjectClass *klass)
                                                         _("Is used to notify that the table column description has changed"),
                                                         NULL,
                                                         G_PARAM_READWRITE));
+
+  /**
+   * AtkObject:accessible-table-row-header:
+   *
+   * Accessible table row header.
+   *
+   * Deprecated: Since 2.12. Use atk_table_get_row_header() and
+   * atk_table_set_row_header() instead.
+   */
   g_object_class_install_property (gobject_class,
                                    PROP_TABLE_ROW_HEADER,
                                    g_param_spec_object (atk_object_name_property_table_row_header,
@@ -593,6 +495,14 @@ atk_object_class_init (AtkObjectClass *klass)
                                                         _("Is used to notify that the table row header has changed"),
                                                         ATK_TYPE_OBJECT,
                                                         G_PARAM_READWRITE));
+  /**
+   * AtkObject:accessible-table-row-description:
+   *
+   * Accessible table row description.
+   *
+   * Deprecated: Since 2.12. Use atk_table_get_row_description() and
+   * atk_table_set_row_description() instead.
+   */
   g_object_class_install_property (gobject_class,
                                    PROP_TABLE_ROW_DESCRIPTION,
                                    g_param_spec_string (atk_object_name_property_table_row_description,
@@ -623,6 +533,22 @@ atk_object_class_init (AtkObjectClass *klass)
                                                         G_MAXINT,
                                                         0,
                                                         G_PARAM_READABLE));
+
+  /**
+   * AtkObject::children-changed:
+   * @atkobject: the object which received the signal.
+   * @arg1: The index of the added or removed child. The value can be
+   * -1. This is used if the value is not known by the implementor
+   * when the child is added/removed or irrelevant.
+   * @arg2: A gpointer to the child AtkObject which was added or
+   * removed. If the child was removed, it is possible that it is not
+   * available for the implementor. In that case this pointer can be
+   * NULL.
+   *
+   * The signal "children-changed" is emitted when a child is added or
+   * removed form an object. It supports two details: "add" and
+   * "remove"
+   */
   atk_object_signals[CHILDREN_CHANGED] =
     g_signal_new ("children_changed",
 		  G_TYPE_FROM_CLASS (klass),
@@ -632,6 +558,18 @@ atk_object_class_init (AtkObjectClass *klass)
 		  g_cclosure_marshal_VOID__UINT_POINTER,
 		  G_TYPE_NONE,
 		  2, G_TYPE_UINT, G_TYPE_POINTER);
+
+  /**
+   * AtkObject::focus-event:
+   * @atkobject: the object which received the signal
+   * @arg1: a boolean value which indicates whether the object gained
+   * or lost focus.
+   *
+   * The signal "focus-event" is emitted when an object gained or lost
+   * focus.
+   *
+   * Deprecated: Since 2.9.4. Use #AtkObject::state-change signal instead.
+   */
   atk_object_signals[FOCUS_EVENT] =
     g_signal_new ("focus_event",
 		  G_TYPE_FROM_CLASS (klass),
@@ -641,6 +579,26 @@ atk_object_class_init (AtkObjectClass *klass)
 		  g_cclosure_marshal_VOID__BOOLEAN,
 		  G_TYPE_NONE,
 		  1, G_TYPE_BOOLEAN);
+  /**
+   * AtkObject::property-change:
+   * @atkobject: the object which received the signal.
+   * @arg1: an #AtkPropertyValues containing the new value of the
+   *   property which changed.
+   *
+   * The signal "property-change" is emitted when an object's property
+   * value changes. @arg1 contains an #AtkPropertyValues with the name
+   * and the new value of the property whose value has changed. Note
+   * that, as with GObject notify, getting this signal does not
+   * guarantee that the value of the property has actually changed; it
+   * may also be emitted when the setter of the property is called to
+   * reinstate the previous value.
+   *
+   * Toolkit implementor note: ATK implementors should use
+   * g_object_notify() to emit property-changed
+   * notifications. #AtkObject::property-changed is needed by the
+   * implementation of atk_add_global_event_listener() because GObject
+   * notify doesn't support emission hooks.
+   */
   atk_object_signals[PROPERTY_CHANGE] =
     g_signal_new ("property_change",
                   G_TYPE_FROM_CLASS (klass),
@@ -650,6 +608,17 @@ atk_object_class_init (AtkObjectClass *klass)
                   g_cclosure_marshal_VOID__POINTER,
                   G_TYPE_NONE, 1,
                   G_TYPE_POINTER);
+
+  /**
+   * AtkObject::state-change:
+   * @atkobject: the object which received the signal.
+   * @arg1: The name of the state which has changed
+   * @arg2: A boolean which indicates whether the state has been set or unset.
+   *
+   * The "state-change" signal is emitted when an object's state
+   * changes.  The detail value identifies the state type which has
+   * changed.
+   */
   atk_object_signals[STATE_CHANGE] =
     g_signal_new ("state_change",
                   G_TYPE_FROM_CLASS (klass),
@@ -660,6 +629,14 @@ atk_object_class_init (AtkObjectClass *klass)
                   G_TYPE_NONE, 2,
                   G_TYPE_STRING,
                   G_TYPE_BOOLEAN);
+
+  /**
+   * AtkObject::visible-data-changed:
+   * @atkobject: the object which received the signal.
+   *
+   * The "visible-data-changed" signal is emitted when the visual
+   * appearance of the object changed.
+   */
   atk_object_signals[VISIBLE_DATA_CHANGED] =
     g_signal_new ("visible_data_changed",
                   G_TYPE_FROM_CLASS (klass),
@@ -668,6 +645,17 @@ atk_object_class_init (AtkObjectClass *klass)
                   (GSignalAccumulator) NULL, NULL,
                   g_cclosure_marshal_VOID__VOID,
                   G_TYPE_NONE, 0);
+
+  /**
+   * AtkObject::active-descendant-changed:
+   * @atkobject: the object which received the signal.
+   * @arg1: the newly focused object.
+   *
+   * The "active-descendant-changed" signal is emitted by an object
+   * which has the state ATK_STATE_MANAGES_DESCENDANTS when the focus
+   * object in the object changes. For instance, a table will emit the
+   * signal when the cell in the table which has focus changes.
+   */
   atk_object_signals[ACTIVE_DESCENDANT_CHANGED] =
     g_signal_new ("active_descendant_changed",
 		  G_TYPE_FROM_CLASS (klass),
@@ -760,10 +748,17 @@ atk_object_get_description (AtkObject *accessible)
  * atk_object_get_parent:
  * @accessible: an #AtkObject
  *
- * Gets the accessible parent of the accessible.
+ * Gets the accessible parent of the accessible. By default this is
+ * the one assigned with atk_object_set_parent(), but it is assumed
+ * that ATK implementors have ways to get the parent of the object
+ * without the need of assigning it manually with
+ * atk_object_set_parent(), and will return it with this method.
  *
- * Returns: (transfer none): a #AtkObject representing the accessible parent
- * of the accessible
+ * If you are only interested on the parent assigned with
+ * atk_object_set_parent(), use atk_object_peek_parent().
+ *
+ * Returns: (transfer none): an #AtkObject representing the accessible
+ * parent of the accessible
  **/
 AtkObject*
 atk_object_get_parent (AtkObject *accessible)
@@ -777,6 +772,27 @@ atk_object_get_parent (AtkObject *accessible)
     return (klass->get_parent) (accessible);
   else
     return NULL;
+}
+
+/**
+ * atk_object_peek_parent:
+ * @accessible: an #AtkObject
+ *
+ * Gets the accessible parent of the accessible, if it has been
+ * manually assigned with atk_object_set_parent. Otherwise, this
+ * function returns %NULL.
+ *
+ * This method is intended as an utility for ATK implementors, and not
+ * to be exposed to accessible tools. See atk_object_get_parent() for
+ * further reference.
+ *
+ * Returns: (transfer none): an #AtkObject representing the accessible
+ * parent of the accessible if assigned
+ **/
+AtkObject*
+atk_object_peek_parent (AtkObject *accessible)
+{
+  return accessible->accessible_parent;
 }
 
 /**
@@ -856,18 +872,38 @@ atk_object_ref_relation_set (AtkObject *accessible)
  * atk_role_register:
  * @name: a character string describing the new role.
  *
- * Registers the role specified by @name.
+ * Registers the role specified by @name. @name must be a meaningful
+ * name. So it should not be empty, or consisting on whitespaces.
  *
- * Returns: an #AtkRole for the new role.
+ * Deprecated: Since 2.12. If your application/toolkit doesn't find a
+ * suitable role for a specific object defined at #AtkRole, please
+ * submit a bug in order to add a new role to the specification.
+ *
+ * Returns: an #AtkRole for the new role if added
+ * properly. ATK_ROLE_INVALID in case of error.
  **/
 AtkRole
 atk_role_register (const gchar *name)
 {
-  if (!extra_roles)
-    extra_roles = g_ptr_array_new ();
+  gboolean valid = FALSE;
+  gint i = 0;
+  glong length = g_utf8_strlen (name, -1);
 
-  g_ptr_array_add (extra_roles, g_strdup (name));
-  return extra_roles->len + ATK_ROLE_LAST_DEFINED;
+  for (i=0; i < length; i++) {
+    if (name[i]!=' ') {
+      valid = TRUE;
+      break;
+    }
+  }
+
+  if (!valid)
+    return ATK_ROLE_INVALID;
+
+  if (!role_names)
+    initialize_role_names ();
+
+  g_ptr_array_add (role_names, g_strdup (name));
+  return role_names->len - 1;
 }
 
 /**
@@ -1061,7 +1097,7 @@ atk_object_set_description (AtkObject   *accessible,
  * @accessible: an #AtkObject
  * @parent: an #AtkObject to be set as the accessible parent
  *
- * Sets the accessible parent of the accessible.
+ * Sets the accessible parent of the accessible. @parent can be NULL.
  **/
 void
 atk_object_set_parent (AtkObject *accessible,
@@ -1114,7 +1150,8 @@ atk_object_set_role (AtkObject *accessible,
  * @accessible: an #AtkObject
  * @handler: a function to be called when a property changes its value
  *
- * Specifies a function to be called when a property changes value.
+ * Deprecated: Since 2.12. Connect directly to property-change or
+ * notify signals.
  *
  * Returns: a #guint which is the handler id used in 
  * atk_object_remove_property_change_handler()
@@ -1139,7 +1176,9 @@ atk_object_connect_property_change_handler (AtkObject *accessible,
  * atk_object_remove_property_change_handler:
  * @accessible: an #AtkObject
  * @handler_id: a guint which identifies the handler to be removed.
- * 
+ *
+ * Deprecated: Since 2.12.
+ *
  * Removes a property change handler.
  **/
 void
@@ -1219,9 +1258,11 @@ atk_implementor_ref_accessible (AtkImplementor *implementor)
  *
  * Since: 1.12
  *
- * Returns: (transfer none): an #AtkAttributeSet consisting of all explicit
- * properties/annotations applied to the object, or an empty set if the object
- * has no name-value pair attributes assigned to it.
+ * Returns: (transfer full): an #AtkAttributeSet consisting of all
+ * explicit properties/annotations applied to the object, or an empty
+ * set if the object has no name-value pair attributes assigned to
+ * it. This #atkattributeset should be freed by a call to
+ * atk_attribute_set_free().
  */
 AtkAttributeSet *
 atk_object_get_attributes (AtkObject                  *accessible)
@@ -1381,7 +1422,7 @@ atk_object_real_get_description (AtkObject *object)
 static AtkObject*
 atk_object_real_get_parent (AtkObject       *object)
 {
-  return object->accessible_parent;
+  return atk_object_peek_parent (object);
 }
 
 static AtkRole
@@ -1400,24 +1441,10 @@ static AtkStateSet*
 atk_object_real_ref_state_set (AtkObject *accessible) 
 {
   AtkStateSet *state_set;
-  AtkObject *ap;
   AtkObject *focus_object;
 
   state_set = atk_state_set_new ();
 
-  ap = atk_object_get_parent (accessible);
-  if (ap)
-    if (ATK_IS_SELECTION (ap))
-      {
-        int i;
-
-        atk_state_set_add_state (state_set, ATK_STATE_SELECTABLE);
-
-        i = atk_object_get_index_in_parent (accessible);
-        if (i >= 0)
-          if (atk_selection_is_child_selected(ATK_SELECTION (ap), i))
-            atk_state_set_add_state (state_set, ATK_STATE_SELECTED);
-      } 
   focus_object = atk_get_focus_object ();
   if (focus_object == accessible)
     atk_state_set_add_state (state_set, ATK_STATE_FOCUSED);
@@ -1458,26 +1485,6 @@ atk_object_real_set_role (AtkObject *object,
                           AtkRole   role)
 {
   object->role = role;
-}
-
-static guint
-atk_object_real_connect_property_change_handler (AtkObject                *obj,
-                                                 AtkPropertyChangeHandler *handler)
-{
-  return g_signal_connect_closure_by_id (obj,
-                                         atk_object_signals[PROPERTY_CHANGE],
-                                         0,
-                                         g_cclosure_new (
-                                         G_CALLBACK (handler), NULL,
-                                         (GClosureNotify) NULL),
-                                         FALSE);
-}
-
-static void
-atk_object_real_remove_property_change_handler (AtkObject           *obj,
-                                          guint               handler_id)
-{
-  g_signal_handler_disconnect (obj, handler_id);
 }
 
 /**
@@ -1537,18 +1544,13 @@ atk_object_notify (GObject     *obj,
 const gchar*
 atk_role_get_name (AtkRole role)
 {
-  if (role >= 0 && role < ATK_ROLE_LAST_DEFINED)
-    return roles + roles_offsets[role];
+  g_return_val_if_fail (role >= 0, NULL);
 
-  if (extra_roles)
-    {
-      gint n = role;
+  if (!role_names)
+    initialize_role_names ();
 
-      n -= ATK_ROLE_LAST_DEFINED + 1;
-
-      if (n >= 0 && n < extra_roles->len)
-        return g_ptr_array_index (extra_roles, n);
-    }
+  if (role < role_names->len)
+    return g_ptr_array_index (role_names, role);
 
   return NULL;
 }
@@ -1564,13 +1566,43 @@ atk_role_get_name (AtkRole role)
 const gchar*
 atk_role_get_localized_name (AtkRole role)
 {
-  gettext_initialization ();
+  _gettext_initialization ();
 
-  if (role >= 0 && role < ATK_ROLE_LAST_DEFINED)
-    return dgettext (GETTEXT_PACKAGE, roles + roles_offsets[role]);
-
-  return atk_role_get_name (role);
+  return dgettext (GETTEXT_PACKAGE, atk_role_get_name (role));
 }
+
+static const gchar*
+atk_object_real_get_object_locale (AtkObject *object)
+{
+  return setlocale (LC_MESSAGES, NULL);
+}
+
+/**
+ * atk_object_get_object_locale:
+ * @accessible: an #AtkObject
+ *
+ * Gets a UTF-8 string indicating the POSIX-style LC_MESSAGES locale
+ * of @accessible.
+ *
+ * Since: 2.8
+ *
+ * Returns: a UTF-8 string indicating the POSIX-style LC_MESSAGES
+ *          locale of @accessible.
+ **/
+const gchar*
+atk_object_get_object_locale (AtkObject *accessible)
+{
+  AtkObjectClass *klass;
+
+  g_return_val_if_fail (ATK_IS_OBJECT (accessible), NULL);
+
+  klass = ATK_OBJECT_GET_CLASS (accessible);
+  if (klass->get_object_locale)
+    return (klass->get_object_locale) (accessible);
+  else
+    return NULL;
+}
+
 
 /**
  * atk_role_for_name:
@@ -1578,8 +1610,7 @@ atk_role_get_localized_name (AtkRole role)
  *
  * Get the #AtkRole type corresponding to a rolew name.
  *
- * Returns: the #AtkRole enumerated type corresponding to the specified
-name,
+ * Returns: the #AtkRole enumerated type corresponding to the specified name,
  *          or #ATK_ROLE_INVALID if no matching role is found.
  **/
 AtkRole
@@ -1590,28 +1621,22 @@ atk_role_for_name (const gchar *name)
 
   g_return_val_if_fail (name, ATK_ROLE_INVALID);
 
-  for (i = 0; i < G_N_ELEMENTS (roles_offsets); i++)
-    {
-      if (strcmp (name, roles + roles_offsets[i]) == 0)
-        return (AtkRole) i;
-    }
+  if (!role_names)
+    initialize_role_names ();
 
-  if (extra_roles)
+  for (i = 0; i < role_names->len; i++)
     {
-      for (i = 0; i < extra_roles->len; i++)
+      gchar *role_name = (gchar *)g_ptr_array_index (role_names, i);
+
+      g_return_val_if_fail (role_name, ATK_ROLE_INVALID);
+
+      if (strcmp (name, role_name) == 0)
         {
-          gchar *extra_role = (gchar *)g_ptr_array_index (extra_roles, i);
-
-          g_return_val_if_fail (extra_role, ATK_ROLE_INVALID);
-
-          if (strcmp (name, extra_role) == 0)
-            {
-              role = i + 1 + ATK_ROLE_LAST_DEFINED;
-              break;
-            }
+          role = i;
+          break;
         }
     }
-  
+
   return role;
 }
 
@@ -1623,7 +1648,7 @@ atk_role_for_name (const gchar *name)
  *
  * Adds a relationship of the specified type with the specified target.
  *
- * Returns TRUE if the relationship is added.
+ * Returns: TRUE if the relationship is added.
  **/
 gboolean
 atk_object_add_relationship (AtkObject       *object,
@@ -1636,7 +1661,8 @@ atk_object_add_relationship (AtkObject       *object,
   g_return_val_if_fail (ATK_IS_OBJECT (object), FALSE);
   g_return_val_if_fail (ATK_IS_OBJECT (target), FALSE);
 
-  if (atk_relation_set_contains (object->relation_set, relationship))
+  if (atk_relation_set_contains_target (object->relation_set,
+                                        relationship, target))
     return FALSE;
 
   array[0] = target;
@@ -1655,7 +1681,7 @@ atk_object_add_relationship (AtkObject       *object,
  *
  * Removes a relationship of the specified type with the specified target.
  *
- * Returns TRUE if the relationship is removed.
+ * Returns: TRUE if the relationship is removed.
  **/
 gboolean
 atk_object_remove_relationship (AtkObject       *object,

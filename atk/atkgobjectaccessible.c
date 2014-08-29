@@ -18,7 +18,20 @@
  */
 
 #include <atk/atkgobjectaccessible.h>
+#include <atk/atkregistry.h>
+#include <atk/atkutil.h>
 
+/**
+ * SECTION:atkgobjectaccessible
+ * @Short_description: This object class is derived from AtkObject and
+ *  can be used as a basis implementing accessible objects.
+ * @Title:AtkGObjectAccessible
+ *
+ * This object class is derived from AtkObject. It can be used as a
+ * basis for implementing accessible objects for GObjects which are
+ * not derived from GtkWidget. One example of its use is in providing
+ * an accessible object for GnomeCanvasItem in the GAIL library.
+ */
 static void       atk_gobject_accessible_class_init       (AtkGObjectAccessibleClass   *klass);
 static void       atk_real_gobject_accessible_initialize  (AtkObject         *atk_obj,
                                                            gpointer          data);
@@ -138,7 +151,13 @@ atk_real_gobject_accessible_initialize (AtkObject  *atk_obj,
 static void
 atk_gobject_accessible_dispose (gpointer  data)
 {
+  GObject *object;
+
   g_return_if_fail (ATK_IS_GOBJECT_ACCESSIBLE (data));
+
+  object = atk_gobject_accessible_get_object (data);
+  if (object)
+      g_object_set_qdata (object, quark_accessible_object, NULL);
 
   g_object_set_qdata (G_OBJECT (data), quark_object, NULL);
   atk_object_notify_state_change (ATK_OBJECT (data), ATK_STATE_DEFUNCT,

@@ -20,6 +20,16 @@
 #include "atk.h"
 #include "atkplug.h"
 
+/**
+ * SECTION:atkplug
+ * @Short_description: Toplevel for embedding into other processes
+ * @Title: AtkPlug
+ * @See_also: #AtkPlug
+ *
+ * See #AtkSocket
+ *
+ */
+
 static void atk_component_interface_init (AtkComponentIface *iface);
 
 static void atk_plug_class_init (AtkPlugClass *klass);
@@ -58,32 +68,33 @@ atk_plug_new (void)
 }
 
 /**
- * atk_plug_get_plug_id:
- * @obj: an #AtkPlug
+ * atk_plug_get_id:
+ * @plug: an #AtkPlug
  *
- * Gets the unique ID of an #AtkPlug object, which can be used to embed inside
- * of an #AtkSocket using atk_socket_embed().
- * Internally, this calls a class function that should be registered by the
- * IPC layer (eg, at-spi2-atk).  The implementor of an AtkSocket object
- * should call this function (after atk-bridge is loaded) and pass the value
- * to the process implementing the AtkPlug into which the AtkSocket is
- * embedded.
+ * Gets the unique ID of an #AtkPlug object, which can be used to
+ * embed inside of an #AtkSocket using atk_socket_embed().
+ *
+ * Internally, this calls a class function that should be registered
+ * by the IPC layer (usually at-spi2-atk). The implementor of an
+ * #AtkPlug object should call this function (after atk-bridge is
+ * loaded) and pass the value to the process implementing the
+ * #AtkSocket, so it could embed the plug.
  *
  * Returns: the unique ID for the plug
  *
  * Since: 1.30
  **/
 gchar*
-atk_plug_get_id (AtkPlug* obj)
+atk_plug_get_id (AtkPlug* plug)
 {
   AtkPlugClass *klass;
 
-  g_return_val_if_fail (ATK_IS_PLUG (obj), NULL);
+  g_return_val_if_fail (ATK_IS_PLUG (plug), NULL);
 
   klass = g_type_class_peek (ATK_TYPE_PLUG);
 
   if (klass && klass->get_object_id)
-    return (klass->get_object_id) (obj);
+    return (klass->get_object_id) (plug);
   else
     return NULL;
 }

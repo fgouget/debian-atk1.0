@@ -17,11 +17,37 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include "atktext.h"
+#include "atk.h"
 #include "atkmarshal.h"
-#include "atk-enum-types.h"
 
 #include <string.h>
+
+/**
+ * SECTION:atktext
+ * @Short_description: The ATK interface implemented by components
+ *  with text content.
+ * @Title:AtkText
+ *
+ * #AtkText should be implemented by #AtkObjects on behalf of widgets
+ * that have text content which is either attributed or otherwise
+ * non-trivial.  #AtkObjects whose text content is simple,
+ * unattributed, and very brief may expose that content via
+ * #atk_object_get_name instead; however if the text is editable,
+ * multi-line, typically longer than three or four words, attributed,
+ * selectable, or if the object already uses the 'name' ATK property
+ * for other information, the #AtkText interface should be used to
+ * expose the text content.  In the case of editable text content,
+ * #AtkEditableText (a subtype of the #AtkText interface) should be
+ * implemented instead.
+ *
+ *  #AtkText provides not only traversal facilities and change
+ * notification for text content, but also caret tracking and glyph
+ * bounding box calculations.  Note that the text strings are exposed
+ * as UTF-8, and are therefore potentially multi-byte, and
+ * caret-to-byte offset mapping makes no assumptions about the
+ * character length; also bounding box glyph-to-offset mapping may be
+ * complex for languages which use ligatures.
+ */
 
 static GPtrArray *extra_attributes = NULL;
 
@@ -32,7 +58,6 @@ enum {
   TEXT_ATTRIBUTES_CHANGED,
   TEXT_INSERT,
   TEXT_REMOVE,
-  TEXT_UPDATE,
   LAST_SIGNAL
 };
 
@@ -162,6 +187,21 @@ atk_text_base_init (AtkTextIface *class)
       class->get_range_extents = atk_text_real_get_range_extents; 
       class->get_bounded_ranges = atk_text_real_get_bounded_ranges; 
 
+      /**
+       * AtkText::text-changed:
+       * @atktext: the object which received the signal.
+       * @arg1: The position (character offset) of the insertion or deletion.
+       * @arg2: The length (in characters) of text inserted or deleted.
+       *
+       * The "text-changed" signal is emitted when the text of the
+       * object which implements the AtkText interface changes, This
+       * signal will have a detail which is either "insert" or
+       * "delete" which identifies whether the text change was an
+       * insertion or a deletion.
+       *
+       * Deprecated: Since 2.9.4. Use #AtkObject::text-insert or
+       * #AtkObject::text-remove instead.
+       */
       atk_text_signals[TEXT_CHANGED] =
 	g_signal_new ("text_changed",
 		      ATK_TYPE_TEXT,
@@ -172,6 +212,18 @@ atk_text_base_init (AtkTextIface *class)
 		      G_TYPE_NONE,
 		      2, G_TYPE_INT, G_TYPE_INT);
 
+      /**
+       * AtkText::text-insert:
+       * @atktext: the object which received the signal.
+       * @arg1: The position (character offset) of the insertion.
+       * @arg2: The length (in characters) of text inserted.
+       * @arg3: The new text inserted
+       *
+       * The "text-insert" signal is emitted when a new text is
+       * inserted. If the signal was not triggered by the user
+       * (e.g. typing or pasting text), the "system" detail should be
+       * included.
+       */
       atk_text_signals[TEXT_INSERT] =
 	g_signal_new ("text_insert",
 		      ATK_TYPE_TEXT,
@@ -182,6 +234,18 @@ atk_text_base_init (AtkTextIface *class)
 		      G_TYPE_NONE,
 		      3, G_TYPE_INT, G_TYPE_INT, G_TYPE_STRING);
 
+      /**
+       * AtkText::text-remove:
+       * @atktext: the object which received the signal.
+       * @arg1: The position (character offset) of the removal.
+       * @arg2: The length (in characters) of text removed.
+       * @arg3: The old text removed
+       *
+       * The "text-remove" signal is emitted when a new text is
+       * removed. If the signal was not triggered by the user
+       * (e.g. typing or pasting text), the "system" detail should be
+       * included.
+       */
       atk_text_signals[TEXT_REMOVE] =
 	g_signal_new ("text_remove",
 		      ATK_TYPE_TEXT,
@@ -192,16 +256,15 @@ atk_text_base_init (AtkTextIface *class)
 		      G_TYPE_NONE,
 		      3, G_TYPE_INT, G_TYPE_INT, G_TYPE_STRING);
 
-      atk_text_signals[TEXT_UPDATE] =
-	g_signal_new ("text_update",
-		      ATK_TYPE_TEXT,
-		      G_SIGNAL_RUN_LAST | G_SIGNAL_DETAILED,
-		      0,
-		      (GSignalAccumulator) NULL, NULL,
-		      atk_marshal_VOID__INT_INT_INT_STRING,
-		      G_TYPE_NONE,
-		      4, G_TYPE_INT, G_TYPE_INT, G_TYPE_INT, G_TYPE_STRING);
-
+      /**
+       * AtkText::text-caret-moved:
+       * @atktext: the object which received the signal.
+       * @arg1: The new position of the text caret.
+       *
+       * The "text-caret-moved" signal is emitted when the caret
+       * position of the text of an object which implements AtkText
+       * changes.
+       */
       atk_text_signals[TEXT_CARET_MOVED] =
 	g_signal_new ("text_caret_moved",
 		      ATK_TYPE_TEXT,
@@ -211,6 +274,14 @@ atk_text_base_init (AtkTextIface *class)
 		      g_cclosure_marshal_VOID__INT,
 		      G_TYPE_NONE,
 		      1, G_TYPE_INT);
+
+      /**
+       * AtkText::text-selection-changed:
+       * @atktext: the object which received the signal.
+       *
+       * The "text-selection-changed" signal is emitted when the
+       * selected text of an object which implements AtkText changes.
+       */
       atk_text_signals[TEXT_SELECTION_CHANGED] =
         g_signal_new ("text_selection_changed",
                       ATK_TYPE_TEXT,
@@ -219,6 +290,14 @@ atk_text_base_init (AtkTextIface *class)
                       (GSignalAccumulator) NULL, NULL,
                       g_cclosure_marshal_VOID__VOID,
                       G_TYPE_NONE, 0);
+      /**
+       * AtkText::text-attributes-changed:
+       * @atktext: the object which received the signal.
+       *
+       * The "text-attributes-changed" signal is emitted when the text
+       * attributes of the text of an object which implements AtkText
+       * changes.
+       */
       atk_text_signals[TEXT_ATTRIBUTES_CHANGED] =
         g_signal_new ("text_attributes_changed",
                       ATK_TYPE_TEXT,
@@ -295,47 +374,14 @@ atk_text_get_character_at_offset (AtkText      *text,
  * @text: an #AtkText
  * @offset: position
  * @boundary_type: An #AtkTextBoundary
- * @start_offset: the start offset of the returned string
- * @end_offset: the offset of the first character after the 
+ * @start_offset: (out): the start offset of the returned string
+ * @end_offset: (out): the offset of the first character after the
  *              returned substring
  *
  * Gets the specified text.
  *
- * If the boundary_type if ATK_TEXT_BOUNDARY_CHAR the character after the 
- * offset is returned.
- *
- * If the boundary_type is ATK_TEXT_BOUNDARY_WORD_START the returned string
- * is from the word start after the offset to the next word start.
- *
- * The returned string will contain the word after the offset if the offset 
- * is inside a word or if the offset is not inside a word.
- *
- * If the boundary_type is ATK_TEXT_BOUNDARY_WORD_END the returned string
- * is from the word end at or after the offset to the next work end.
- *
- * The returned string will contain the word after the offset if the offset
- * is inside a word and will contain the word after the word after the offset
- * if the offset is not inside a word.
- *
- * If the boundary type is ATK_TEXT_BOUNDARY_SENTENCE_START the returned
- * string is from the sentence start after the offset to the next sentence
- * start.
- *
- * The returned string will contain the sentence after the offset if the offset
- * is inside a sentence or if the offset is not inside a sentence.
- *
- * If the boundary_type is ATK_TEXT_BOUNDARY_SENTENCE_END the returned string
- * is from the sentence end at or after the offset to the next sentence end.
- *
- * The returned string will contain the sentence after the offset if the offset
- * is inside a sentence and will contain the sentence after the sentence
- * after the offset if the offset is not inside a sentence.
- *
- * If the boundary type is ATK_TEXT_BOUNDARY_LINE_START the returned
- * string is from the line start after the offset to the next line start.
- *
- * If the boundary_type is ATK_TEXT_BOUNDARY_LINE_END the returned string
- * is from the line end at or after the offset to the next line end.
+ * Deprecated: This method is deprecated since ATK version
+ * 2.9.3. Please use atk_text_get_string_at_offset() instead.
  *
  * Returns: a newly allocated string containing the text after @offset bounded
  *   by the specified @boundary_type. Use g_free() to free the returned string.
@@ -378,8 +424,8 @@ atk_text_get_text_after_offset (AtkText          *text,
  * @text: an #AtkText
  * @offset: position
  * @boundary_type: An #AtkTextBoundary
- * @start_offset: the start offset of the returned string
- * @end_offset: the offset of the first character after the 
+ * @start_offset: (out): the start offset of the returned string
+ * @end_offset: (out): the offset of the first character after the
  *              returned substring
  *
  * Gets the specified text.
@@ -388,19 +434,11 @@ atk_text_get_text_after_offset (AtkText          *text,
  * offset is returned.
  *
  * If the boundary_type is ATK_TEXT_BOUNDARY_WORD_START the returned string
- * is from the word start at or before the offset to the word start after 
+ * is from the word start at or before the offset to the word start after
  * the offset.
  *
  * The returned string will contain the word at the offset if the offset
- * is inside a word and will contain the word before the offset if the 
- * offset is not inside a word.
- *
- * If the boundary_type is ATK_TEXT_BOUNDARY_WORD_END the returned string
- * is from the word end before the offset to the word end at or after the
- * offset.
- *
- * The returned string will contain the word at the offset if the offset
- * is inside a word and will contain the word after to the offset if the 
+ * is inside a word and will contain the word before the offset if the
  * offset is not inside a word.
  *
  * If the boundary type is ATK_TEXT_BOUNDARY_SENTENCE_START the returned
@@ -408,24 +446,15 @@ atk_text_get_text_after_offset (AtkText          *text,
  * start after the offset.
  *
  * The returned string will contain the sentence at the offset if the offset
- * is inside a sentence and will contain the sentence before the offset 
- * if the offset is not inside a sentence.
- *
- * If the boundary_type is ATK_TEXT_BOUNDARY_SENTENCE_END the returned string
- * is from the sentence end before the offset to the sentence end at or
- * after the offset.
- *
- * The returned string will contain the sentence at the offset if the offset
- * is inside a sentence and will contain the sentence after the offset 
+ * is inside a sentence and will contain the sentence before the offset
  * if the offset is not inside a sentence.
  *
  * If the boundary type is ATK_TEXT_BOUNDARY_LINE_START the returned
  * string is from the line start at or before the offset to the line
  * start after the offset.
  *
- * If the boundary_type is ATK_TEXT_BOUNDARY_LINE_END the returned string
- * is from the line end before the offset to the line end at or after
- * the offset.
+ * Deprecated: This method is deprecated since ATK version
+ * 2.9.4. Please use atk_text_get_string_at_offset() instead.
  *
  * Returns: a newly allocated string containing the text at @offset bounded by
  *   the specified @boundary_type. Use g_free() to free the returned string.
@@ -465,52 +494,14 @@ atk_text_get_text_at_offset (AtkText          *text,
  * @text: an #AtkText
  * @offset: position
  * @boundary_type: An #AtkTextBoundary
- * @start_offset: the start offset of the returned string
- * @end_offset: the offset of the first character after the 
+ * @start_offset: (out): the start offset of the returned string
+ * @end_offset: (out): the offset of the first character after the
  *              returned substring
  *
  * Gets the specified text.
  *
- * If the boundary_type if ATK_TEXT_BOUNDARY_CHAR the character before the
- * offset is returned.
- *
- * If the boundary_type is ATK_TEXT_BOUNDARY_WORD_START the returned string
- * is from the word start before the word start before or at the offset to 
- * the word start before or at the offset.
- *
- * The returned string will contain the word before the offset if the offset
- * is inside a word and will contain the word before the word before the 
- * offset if the offset is not inside a word.
- *
- * If the boundary_type is ATK_TEXT_BOUNDARY_WORD_END the returned string
- * is from the word end before the word end before the offset to the word
- * end before the offset.
- *
- * The returned string will contain the word before the offset if the offset
- * is inside a word or if the offset is not inside a word.
- *
- * If the boundary type is ATK_TEXT_BOUNDARY_SENTENCE_START the returned
- * string is from the sentence start before the sentence start before 
- * the offset to the sentence start before the offset.
- *
- * The returned string will contain the sentence before the offset if the 
- * offset is inside a sentence and will contain the sentence before the 
- * sentence before the offset if the offset is not inside a sentence.
- *
- * If the boundary_type is ATK_TEXT_BOUNDARY_SENTENCE_END the returned string
- * is from the sentence end before the sentence end at or before the offset to 
- * the sentence end at or before the offset.
- *
- * The returned string will contain the sentence before the offset if the 
- * offset is inside a sentence or if the offset is not inside a sentence.
- *
- * If the boundary type is ATK_TEXT_BOUNDARY_LINE_START the returned
- * string is from the line start before the line start ar or before the offset 
- * to the line start ar or before the offset.
- *
- * If the boundary_type is ATK_TEXT_BOUNDARY_LINE_END the returned string
- * is from the line end before the line end before the offset to the 
- * line end before the offset.
+ * Deprecated: This method is deprecated since ATK version
+ * 2.9.3. Please use atk_text_get_string_at_offset() instead.
  *
  * Returns: a newly allocated string containing the text before @offset bounded
  *   by the specified @boundary_type. Use g_free() to free the returned string.
@@ -544,6 +535,92 @@ atk_text_get_text_before_offset (AtkText          *text,
 
   if (iface->get_text_before_offset)
     return (*(iface->get_text_before_offset)) (text, offset, boundary_type, real_start_offset, real_end_offset);
+  else
+    return NULL;
+}
+
+/**
+ * atk_text_get_string_at_offset:
+ * @text: an #AtkText
+ * @offset: position
+ * @granularity: An #AtkTextGranularity
+ * @start_offset: (out): the start offset of the returned string, or -1
+ *                if an error has occurred (e.g. invalid offset, not implemented)
+ * @end_offset: (out): the offset of the first character after the returned string,
+ *              or -1 if an error has occurred (e.g. invalid offset, not implemented)
+ *
+ * Gets a portion of the text exposed through an #AtkText according to a given @offset
+ * and a specific @granularity, along with the start and end offsets defining the
+ * boundaries of such a portion of text.
+ *
+ * If @granularity is ATK_TEXT_GRANULARITY_CHAR the character at the
+ * offset is returned.
+ *
+ * If @granularity is ATK_TEXT_GRANULARITY_WORD the returned string
+ * is from the word start at or before the offset to the word start after
+ * the offset.
+ *
+ * The returned string will contain the word at the offset if the offset
+ * is inside a word and will contain the word before the offset if the
+ * offset is not inside a word.
+ *
+ * If @granularity is ATK_TEXT_GRANULARITY_SENTENCE the returned string
+ * is from the sentence start at or before the offset to the sentence
+ * start after the offset.
+ *
+ * The returned string will contain the sentence at the offset if the offset
+ * is inside a sentence and will contain the sentence before the offset
+ * if the offset is not inside a sentence.
+ *
+ * If @granularity is ATK_TEXT_GRANULARITY_LINE the returned string
+ * is from the line start at or before the offset to the line
+ * start after the offset.
+ *
+ * If @granularity is ATK_TEXT_GRANULARITY_PARAGRAPH the returned string
+ * is from the start of the paragraph at or before the offset to the start
+ * of the following paragraph after the offset.
+ *
+ * Since: 2.10
+ *
+ * Returns: a newly allocated string containing the text at the @offset bounded
+ *   by the specified @granularity. Use g_free() to free the returned string.
+ *   Returns %NULL if the offset is invalid or no implementation is available.
+ **/
+gchar* atk_text_get_string_at_offset (AtkText *text,
+                                      gint offset,
+                                      AtkTextGranularity granularity,
+                                      gint *start_offset,
+                                      gint *end_offset)
+{
+  AtkTextIface *iface;
+  gint local_start_offset, local_end_offset;
+  gint *real_start_offset, *real_end_offset;
+
+  g_return_val_if_fail (ATK_IS_TEXT (text), NULL);
+
+  if (start_offset)
+    {
+      *start_offset = -1;
+      real_start_offset = start_offset;
+    }
+  else
+    real_start_offset = &local_start_offset;
+
+  if (end_offset)
+    {
+      *end_offset = -1;
+      real_end_offset = end_offset;
+    }
+  else
+    real_end_offset = &local_end_offset;
+
+  if (offset < 0)
+    return NULL;
+
+  iface = ATK_TEXT_GET_IFACE (text);
+
+  if (iface->get_string_at_offset)
+    return (*(iface->get_string_at_offset)) (text, offset, granularity, real_start_offset, real_end_offset);
   else
     return NULL;
 }
@@ -641,8 +718,8 @@ atk_text_get_character_extents (AtkText *text,
  *@text: an #AtkText
  *@offset: the offset at which to get the attributes, -1 means the offset of
  *the character to be inserted at the caret location.
- *@start_offset: the address to put the start offset of the range
- *@end_offset: the address to put the end offset of the range
+ *@start_offset: (out): the address to put the start offset of the range
+ *@end_offset: (out): the address to put the end offset of the range
  *
  *Creates an #AtkAttributeSet which consists of the attributes explicitly
  *set at the position @offset in the text. @start_offset and @end_offset are
@@ -804,8 +881,8 @@ atk_text_get_n_selections (AtkText *text)
  * start of the text.  The selected region closest to the beginning
  * of the text region is assigned the number 0, etc.  Note that adding,
  * moving or deleting a selected region can change the numbering.
- * @start_offset: passes back the start position of the selected region
- * @end_offset: passes back the end position of (e.g. offset immediately past) 
+ * @start_offset: (out): passes back the start position of the selected region
+ * @end_offset: (out): passes back the end position of (e.g. offset immediately past)
  * the selected region
  *
  * Gets the text from the specified selection.
@@ -992,10 +1069,8 @@ atk_text_get_range_extents (AtkText          *text,
 
   g_return_if_fail (ATK_IS_TEXT (text));
   g_return_if_fail (rect);
+  g_return_if_fail (start_offset >= 0 && start_offset < end_offset);
 
-  if (start_offset < 0 || start_offset >= end_offset)
-    return;
- 
   iface = ATK_TEXT_GET_IFACE (text);
 
   if (iface->get_range_extents)
@@ -1384,7 +1459,8 @@ atk_text_real_get_bounded_ranges (AtkText          *text,
 
 /**
  * atk_text_free_ranges:
- * @ranges: A pointer to an array of  #AtkTextRange which is to be freed.
+ * @ranges: (array): A pointer to an array of #AtkTextRange which is
+ *   to be freed.
  *
  * Frees the memory associated with an array of AtkTextRange. It is assumed
  * that the array was returned by the function atk_text_get_bounded_ranges

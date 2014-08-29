@@ -17,10 +17,19 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include "atkstate.h"
-#include "atk-enum-types.h"
+#include "atk.h"
 
 #include <string.h>
+
+/**
+ * SECTION:atkstate
+ * @Short_description: An AtkState describes a component's particular state.
+ * @Title:AtkState
+ *
+ * An AtkState describes a component's particular state. The actual
+ * state of an component is described by its AtkStateSet, which is a
+ * set of AtkStates.
+ */
 
 static guint last_type = ATK_STATE_LAST_DEFINED;
 

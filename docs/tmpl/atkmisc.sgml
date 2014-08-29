@@ -27,7 +27,6 @@ AtkMisc
 
 </para>
 
-@parent: 
 
 <!-- ##### FUNCTION atk_misc_threads_enter ##### -->
 <para>

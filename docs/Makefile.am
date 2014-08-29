@@ -8,6 +8,8 @@ DOC_MODULE=atk
 # The top-level SGML file.
 DOC_MAIN_SGML_FILE=atk-docs.sgml
 
+# Extra options to supply to gtkdoc-scan
+SCAN_OPTIONS=--deprecated-guards=G_DISABLE_DEPRECATED
 # The directory containing the source code (if it contains documentation).
 DOC_SOURCE_DIR=../atk
 
@@ -20,7 +22,7 @@ IGNORE_HFILES =	atkmarshal.h atkintl.h
 
 # CFLAGS and LDFLAGS for compiling scan program. Only needed
 # if $(DOC_MODULE).types is non-empty.
-INCLUDES = 			\
+AM_CPPFLAGS = 			\
 	-I$(top_srcdir)		\
 	-I$(top_builddir)	\
 	$(DEP_CFLAGS)
@@ -29,7 +31,7 @@ GTKDOC_LIBS = $(top_builddir)/atk/libatk-$(ATK_API_VERSION).la \
               $(DEP_LIBS)
 
 # gtkdoc-mkdb related varaibles
-MKDB_OPTIONS =
+MKDB_OPTIONS =--sgml-mode
 content_files =		\
 	version.xml
 HTML_IMAGES =

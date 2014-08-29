@@ -46,6 +46,25 @@ typedef struct _AtkDocument AtkDocument;
 #endif
 typedef struct _AtkDocumentIface AtkDocumentIface;
 
+/**
+ * AtkDocumentIface:
+ * @get_document_type: gets a string indicating the document
+ *   type. This virtual function is deprecated since 2.12 and it
+ *   should not be overriden.
+ * @get_document: a #GObject instance that implements
+ *   AtkDocumentIface. This virtual method is deprecated since 2.12
+ *   and it should not be overriden.
+ * @get_document_locale: gets locale. This virtual function is
+ *   deprecated since 2.7.90 and it should not be overriden.
+ * @get_document_attributes: gets an AtkAttributeSet which describes
+ *   document-wide attributes as name-value pairs.
+ * @get_document_attribute_value: returns a string value assocciated
+ *   with the named attribute for this document, or NULL
+ * @set_document_attribute: sets the value of an attribute. Returns
+ *   TRUE on success, FALSE otherwise
+ * @get_current_page_number: gets the current page number. Since 2.12
+ * @get_page_count: gets the page count of the document. Since 2.12
+ */
 struct _AtkDocumentIface
 {
   GTypeInterface parent;
@@ -59,24 +78,29 @@ struct _AtkDocumentIface
   gboolean              ( *set_document_attribute) (AtkDocument         *document,
                                                     const gchar         *attribute_name,
                                                     const gchar         *attribute_value);
-  
-  AtkFunction pad1;
-  AtkFunction pad2;
-  AtkFunction pad3;
-  AtkFunction pad4;
+  gint                  ( *get_current_page_number) (AtkDocument *document);
+  gint                  ( *get_page_count) (AtkDocument *document);
 };
 
 GType  atk_document_get_type             (void);
 
+G_DEPRECATED
 const gchar*          atk_document_get_document_type (AtkDocument   *document);
+
+G_DEPRECATED
 gpointer atk_document_get_document (AtkDocument   *document);
+
+G_DEPRECATED
 const gchar*          atk_document_get_locale (AtkDocument *document);
+
 AtkAttributeSet*      atk_document_get_attributes (AtkDocument *document);
 const gchar*          atk_document_get_attribute_value (AtkDocument *document,
                                                         const gchar *attribute_name);
 gboolean              atk_document_set_attribute_value (AtkDocument *document,
                                                         const gchar *attribute_name,
                                                         const gchar *attribute_value);
+gint                  atk_document_get_current_page_number (AtkDocument *document);
+gint                  atk_document_get_page_count      (AtkDocument *document);
 
 G_END_DECLS
 

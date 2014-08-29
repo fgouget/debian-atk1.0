@@ -20,6 +20,25 @@
 
 #include "atkcomponent.h"
 
+/**
+ * SECTION:atkcomponent
+ * @Short_description: The ATK interface provided by UI components
+ * which occupy a physical area on the screen.
+ * which the user can activate/interact with.
+ * @Title:AtkComponent
+ *
+ * #AtkComponent should be implemented by most if not all UI elements
+ * with an actual on-screen presence, i.e. components which can be
+ * said to have a screen-coordinate bounding box.  Virtually all
+ * widgets will need to have #AtkComponent implementations provided
+ * for their corresponding #AtkObject class.  In short, only UI
+ * elements which are *not* GUI elements will omit this ATK interface.
+ *
+ * A possible exception might be textual information with a
+ * transparent background, in which case text glyph bounding box
+ * information is provided by #AtkText.
+ */
+
 enum {
   BOUNDS_CHANGED,
   LAST_SIGNAL
@@ -80,6 +99,15 @@ atk_component_base_init (AtkComponentIface *class)
       class->get_position = atk_component_real_get_position;
       class->get_size = atk_component_real_get_size;
 
+
+      /**
+       * AtkComponent::bounds-changed:
+       * @atkcomponent: the object which received the signal.
+       * @arg1: The AtkRectangle giving the new position and size.
+       *
+       * The 'bounds-changed" signal is emitted when the bposition or
+       * size of the component changes.
+       */
       atk_component_signals[BOUNDS_CHANGED] =
         g_signal_new ("bounds_changed",
                       ATK_TYPE_COMPONENT,
@@ -104,7 +132,11 @@ atk_component_base_init (AtkComponentIface *class)
  * when this object receives focus events (in or out). If the handler is
  * already added it is not added again
  *
- * Returns: a handler id which can be used in atk_component_remove_focus_handler
+ * Deprecated: This method is deprecated since ATK version 2.9.4. If
+ * you need to track when an object gains or lose the focus, use
+ * state-changed:focused notification instead.
+ *
+ * Returns: a handler id which can be used in atk_component_remove_focus_handler()
  * or zero if the handler was already added.
  **/
 guint
@@ -131,6 +163,11 @@ atk_component_add_focus_handler (AtkComponent    *component,
  * Remove the handler specified by @handler_id from the list of
  * functions to be executed when this object receives focus events 
  * (in or out).
+ *
+ * Deprecated: This method is deprecated since ATK version 2.9.4. If
+ * you need to track when an object gains or lose the focus, use
+ * state-changed:focused notification instead.
+ *
  **/
 void
 atk_component_remove_focus_handler (AtkComponent    *component,
@@ -154,6 +191,10 @@ atk_component_remove_focus_handler (AtkComponent    *component,
  * or to the components top level window
  *
  * Checks whether the specified point is within the extent of the @component.
+ *
+ * Toolkit implementor note: ATK provides a default implementation for
+ * this virtual method. In general there are little reason to
+ * re-implement it.
  *
  * Returns: %TRUE or %FALSE indicating whether the specified point is within
  * the extent of the @component or not
@@ -265,6 +306,8 @@ atk_component_get_extents    (AtkComponent    *component,
  *
  * Gets the position of @component in the form of 
  * a point specifying @component's top-left corner.
+ *
+ * Deprecated: Since 2.12. Use atk_component_get_extents() instead.
  **/
 void
 atk_component_get_position   (AtkComponent    *component,
@@ -300,6 +343,8 @@ atk_component_get_position   (AtkComponent    *component,
  * @height: address of #gint to put height of @component
  *
  * Gets the size of the @component in terms of width and height.
+ *
+ * Deprecated: Since 2.12. Use atk_component_get_extents() instead.
  **/
 void
 atk_component_get_size       (AtkComponent    *component,

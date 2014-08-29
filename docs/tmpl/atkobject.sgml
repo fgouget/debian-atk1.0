@@ -3,33 +3,18 @@ AtkObject
 
 <!-- ##### SECTION Short_Description ##### -->
 
-The base object class for the Accessibility Toolkit API.
 
 <!-- ##### SECTION Long_Description ##### -->
 <para>
-This class is the primary class for accessibility support via
-the Accessibility ToolKit (ATK).  Objects which are instances
-of #AtkObject (or instances of AtkObject-derived types) are
-queried for properties which relate basic (and generic) properties of a
-UI component such as name and description.  Instances of #AtkObject
-may also be queried as to whether they implement other ATK interfaces
-(e.g. #AtkAction, #AtkComponent, etc.), as appropriate to the role
-which a given UI component plays in a user interface.
+
 </para>
-<para>All UI components in an application which provide useful
-information or services to the user must provide corresponding
-#AtkObject instances on request (in GTK+, for instance, usually
-on a call to #gtk_widget_get_accessible ()), either via ATK support
-built into the toolkit for the widget class or ancestor class, or in
-the case of custom widgets, if the inherited #AtkObject implementation
-is insufficient, via instances of a new #AtkObject subclass. 
-</para>
+
 
 <!-- ##### SECTION See_Also ##### -->
 <para>
-See also: #AtkObjectFactory, #AtkRegistry.
-( GTK+ users see also #GtkAccessible).
+
 </para>
+
 
 <!-- ##### SECTION Stability_Level ##### -->
 
@@ -39,64 +24,55 @@ See also: #AtkObjectFactory, #AtkRegistry.
 
 <!-- ##### STRUCT AtkObject ##### -->
 <para>
-The AtkObject structure should not be accessed directly.
 
 </para>
 
 
 <!-- ##### SIGNAL AtkObject::active-descendant-changed ##### -->
 <para>
-The "active-descendant-changed" signal is emitted by an object which has
-the state ATK_STATE_MANAGES_DESCENDANTS when the focus object in the
-object changes. For instance, a table will emit the signal when the cell
-in the table which has focus changes.
+
 </para>
 
 @atkobject: the object which received the signal.
-@arg1: the newly focused object.
+@arg1: 
 
 <!-- ##### SIGNAL AtkObject::children-changed ##### -->
 <para>
-The signal "children-changed" is emitted when a child is added or
-removed form an object. It supports two details: "add" and "remove"
+
 </para>
 
 @atkobject: the object which received the signal.
-@arg1: The index of the added or removed child
-@arg2: A gpointer to the child AtkObject which was added or removed
+@arg1: 
+@arg2: 
 
 <!-- ##### SIGNAL AtkObject::focus-event ##### -->
 <para>
-The signal "focus-event" is emitted when an object gains or loses focus.
+
 </para>
 
 @atkobject: the object which received the signal.
-@arg1: A boolean value which indicates whether the object gained or lost focus.
+@arg1: 
 
 <!-- ##### SIGNAL AtkObject::property-change ##### -->
 <para>
-The signal "property-change" is emitted when an object's property
-value changes. The detail identifies the name of the property whose
-value has changed.
+
 </para>
 
 @atkobject: the object which received the signal.
-@arg1: The new value of the property which changed.
+@arg1: 
 
 <!-- ##### SIGNAL AtkObject::state-change ##### -->
 <para>
-The "state-change" signal is emitted  when an object's state changes.
-The detail value identifies the state type which has changed.
+
 </para>
 
 @atkobject: the object which received the signal.
-@arg1: The name of the state which has changed
-@arg2: A boolean which indicates whether the state has been set or unset.
+@arg1: 
+@arg2: 
 
 <!-- ##### SIGNAL AtkObject::visible-data-changed ##### -->
 <para>
-The "visible-data-changed" signal is emitted when the visual appearance of 
-the object changed.
+
 </para>
 
 @atkobject: the object which received the signal.
@@ -178,6 +154,7 @@ the object changed.
 
 <!-- ##### ENUM AtkRole ##### -->
 <para>
+
 </para>
 
 @ATK_ROLE_INVALID: 
@@ -281,6 +258,22 @@ the object changed.
 @ATK_ROLE_IMAGE_MAP: 
 @ATK_ROLE_NOTIFICATION: 
 @ATK_ROLE_INFO_BAR: 
+@ATK_ROLE_LEVEL_BAR: 
+@ATK_ROLE_TITLE_BAR: 
+@ATK_ROLE_BLOCK_QUOTE: 
+@ATK_ROLE_AUDIO: 
+@ATK_ROLE_VIDEO: 
+@ATK_ROLE_DEFINITION: 
+@ATK_ROLE_ARTICLE: 
+@ATK_ROLE_LANDMARK: 
+@ATK_ROLE_LOG: 
+@ATK_ROLE_MARQUEE: 
+@ATK_ROLE_MATH: 
+@ATK_ROLE_RATING: 
+@ATK_ROLE_TIMER: 
+@ATK_ROLE_DESCRIPTION_LIST: 
+@ATK_ROLE_DESCRIPTION_TERM: 
+@ATK_ROLE_DESCRIPTION_VALUE: 
 @ATK_ROLE_LAST_DEFINED: 
 
 <!-- ##### FUNCTION atk_role_register ##### -->
@@ -294,6 +287,7 @@ the object changed.
 
 <!-- ##### ENUM AtkLayer ##### -->
 <para>
+
 </para>
 
 @ATK_LAYER_INVALID: 
@@ -307,20 +301,26 @@ the object changed.
 
 <!-- ##### STRUCT AtkImplementor ##### -->
 <para>
-The AtkImplementor interface is implemented by objects for which AtkObject peers may be obtained via calls to iface->(ref_accessible)(implementor);
+
+</para>
+
+
+<!-- ##### STRUCT AtkAttribute ##### -->
+<para>
+
+</para>
+
+@name: 
+@value: 
+
+<!-- ##### TYPEDEF AtkAttributeSet ##### -->
+<para>
+
 </para>
 
 
 <!-- ##### STRUCT AtkPropertyValues ##### -->
 <para>
-The Atk PropertyValue structure is used when notifying a change in property.
-Currently, the only property for which old_value is used is
-accessible-state; for instance if there is a focus change the
-property change handler will be called for the object which lost the focus
-with the old_value containing the AtkState value corresponding to focused
-and the property change handler will be called for the object which
-received the focus with the new_value containing the AtkState value
-corresponding to focused.
 
 </para>
 
@@ -330,23 +330,20 @@ corresponding to focused.
 
 <!-- ##### USER_FUNCTION AtkFunction ##### -->
 <para>
-An AtkFunction is a function definition used for padding which has been added 
-to class and interface structures to allow for expansion in the future.
 
 </para>
 
-@data: a gpointer to parameter data.
-@Returns: Nothing useful, this is only a dummy prototype.
+@user_data: 
+@Returns: 
 
 
 <!-- ##### USER_FUNCTION AtkPropertyChangeHandler ##### -->
 <para>
-An AtkPropertyChangeHandler is a function which is executed when an AtkObject's property changes value. It is specified in a call to 
-atk_object_connect_property_change_handler().
+
 </para>
 
-@Param1:  an #AtkObject
-@Param2:  an #AtkPropertyValues
+@obj: 
+@vals: 
 
 
 <!-- ##### FUNCTION atk_implementor_ref_accessible ##### -->
@@ -377,6 +374,15 @@ atk_object_connect_property_change_handler().
 
 
 <!-- ##### FUNCTION atk_object_get_parent ##### -->
+<para>
+
+</para>
+
+@accessible: 
+@Returns: 
+
+
+<!-- ##### FUNCTION atk_object_peek_parent ##### -->
 <para>
 
 </para>
@@ -420,7 +426,6 @@ atk_object_connect_property_change_handler().
 
 @accessible: 
 @Returns: 
-@Deprecated: Use atk_component_get_layer instead.
 
 
 <!-- ##### FUNCTION atk_object_get_mdi_zorder ##### -->
@@ -430,7 +435,6 @@ atk_object_connect_property_change_handler().
 
 @accessible: 
 @Returns: 
-@Deprecated: Use atk_component_get_mdi_zorder instead.
 
 
 <!-- ##### FUNCTION atk_object_get_role ##### -->
@@ -557,6 +561,15 @@ atk_object_connect_property_change_handler().
 
 
 <!-- ##### FUNCTION atk_object_get_attributes ##### -->
+<para>
+
+</para>
+
+@accessible: 
+@Returns: 
+
+
+<!-- ##### FUNCTION atk_object_get_object_locale ##### -->
 <para>
 
 </para>

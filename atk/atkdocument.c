@@ -19,10 +19,27 @@
 
 #include "atkdocument.h"
 
+/**
+ * SECTION:atkdocument
+ * @Short_description: The ATK interface which represents the toplevel
+ *  container for document content.
+ * @Title:AtkDocument
+ *
+ * The AtkDocument interface should be supported by any object whose
+ * content is a representation or view of a document.  The AtkDocument
+ * interface should appear on the toplevel container for the document
+ * content; however AtkDocument instances may be nested (i.e. an
+ * AtkDocument may be a descendant of another AtkDocument) in those
+ * cases where one document contains "embedded content" which can
+ * reasonably be considered a document in its own right.
+ *
+ */
+
 enum {
   LOAD_COMPLETE,
   RELOAD,
   LOAD_STOPPED,
+  PAGE_CHANGED,
   LAST_SIGNAL
 };
 
@@ -56,6 +73,20 @@ atk_document_base_init (AtkDocumentIface *class)
   static gboolean initialized = FALSE;
   if (!initialized)
     {
+      /**
+       * AtkDocument::load-complete:
+       * @atkdocument: the object which received the signal.
+       *
+       * The 'load-complete' signal is emitted when a pending load of
+       * a static document has completed.  This signal is to be
+       * expected by ATK clients if and when AtkDocument implementors
+       * expose ATK_STATE_BUSY.  If the state of an AtkObject which
+       * implements AtkDocument does not include ATK_STATE_BUSY, it
+       * should be safe for clients to assume that the AtkDocument's
+       * static contents are fully loaded into the container.
+       * (Dynamic document contents should be exposed via other
+       * signals.)
+       */
       atk_document_signals[LOAD_COMPLETE] =
         g_signal_new ("load_complete",
                       ATK_TYPE_DOCUMENT,
@@ -64,6 +95,16 @@ atk_document_base_init (AtkDocumentIface *class)
                       (GSignalAccumulator) NULL, NULL,
                       g_cclosure_marshal_VOID__VOID,
                       G_TYPE_NONE, 0);
+      /**
+       * AtkDocument::reload:
+       * @atkdocument: the object which received the signal.
+       *
+       * The 'reload' signal is emitted when the contents of a
+       * document is refreshed from its source.  Once 'reload' has
+       * been emitted, a matching 'load-complete' or 'load-stopped'
+       * signal should follow, which clients may await before
+       * interrogating ATK for the latest document content.
+       */
       atk_document_signals[RELOAD] =
         g_signal_new ("reload",
                       ATK_TYPE_DOCUMENT,
@@ -72,6 +113,18 @@ atk_document_base_init (AtkDocumentIface *class)
                       (GSignalAccumulator) NULL, NULL,
                       g_cclosure_marshal_VOID__VOID,
                       G_TYPE_NONE, 0);
+
+      /**
+       * AtkDocument::load-stopped:
+       * @atkdocument: the object which received the signal.
+       *
+       * The 'load-stopped' signal is emitted when a pending load of
+       * document contents is cancelled, paused, or otherwise
+       * interrupted by the user or application logic.  It should not
+       * however be emitted while waiting for a resource (for instance
+       * while blocking on a file or network read) unless a
+       * user-significant timeout has occurred.
+       */
       atk_document_signals[LOAD_STOPPED] =
         g_signal_new ("load_stopped",
                       ATK_TYPE_DOCUMENT,
@@ -80,6 +133,27 @@ atk_document_base_init (AtkDocumentIface *class)
                       (GSignalAccumulator) NULL, NULL,
                       g_cclosure_marshal_VOID__VOID,
                       G_TYPE_NONE, 0);
+
+      /**
+       * AtkDocument::page-changed:
+       * @atkdocument: the object on which the signal was emitted
+       * @page_number: the new page number. If this value is unknown
+       * or not applicable, -1 should be provided.
+       *
+       * The 'page-changed' signal is emitted when the current page of
+       * a document changes, e.g. pressing page up/down in a document
+       * viewer.
+       *
+       * Since: 2.12
+       */
+      atk_document_signals[PAGE_CHANGED] =
+        g_signal_new ("page_changed",
+                      ATK_TYPE_DOCUMENT,
+                      G_SIGNAL_RUN_LAST,
+                      0,
+                      (GSignalAccumulator) NULL, NULL,
+                      g_cclosure_marshal_VOID__INT,
+                      G_TYPE_NONE, 1, G_TYPE_INT);
 
       initialized = TRUE;
     }
@@ -90,6 +164,9 @@ atk_document_base_init (AtkDocumentIface *class)
  * @document: a #GObject instance that implements AtkDocumentIface
  *
  * Gets a string indicating the document type.
+ *
+ * Deprecated: Since 2.12. Please use atk_document_get_attributes() to
+ * ask for the document type if it applies.
  *
  * Returns: a string indicating the document type
  **/
@@ -119,6 +196,10 @@ atk_document_get_document_type (AtkDocument *document)
  * Gets a %gpointer that points to an instance of the DOM.  It is
  * up to the caller to check atk_document_get_type to determine
  * how to cast this pointer.
+ *
+ * Deprecated: Since 2.12. @document is already a representation of
+ * the document. Use it directly, or one of his children, as an
+ * instance of the DOM.
  *
  * Returns: (transfer none): a %gpointer that points to an instance of the DOM.
  **/
@@ -150,6 +231,9 @@ atk_document_get_document (AtkDocument *document)
  *          text substrings or images within this document may have
  *          a different locale, see atk_text_get_attributes and
  *          atk_image_get_image_locale.
+ *
+ * Deprecated: This method is deprecated since ATK version
+ * 2.7.90. Please use atk_object_get_object_locale() instead.
  *
  * Returns: a UTF-8 string indicating the POSIX-style LC_MESSAGES
  *          locale of the document content as a whole, or NULL if
@@ -270,5 +354,61 @@ atk_document_set_attribute_value (AtkDocument *document,
   else
     {
       return FALSE;
+    }
+}
+
+/**
+ * atk_document_get_current_page_number:
+ * @document: the #AtkDocument
+ *
+ * Since: 2.12
+ *
+ * Returns: current page number inside @document. -1 if not
+ * implemented, not know by the implementor or irrelevant.
+ */
+gint
+atk_document_get_current_page_number (AtkDocument *document)
+{
+  AtkDocumentIface *iface;
+
+  g_return_val_if_fail (ATK_IS_DOCUMENT (document), FALSE);
+
+  iface = ATK_DOCUMENT_GET_IFACE (document);
+
+  if (iface->get_current_page_number)
+    {
+      return (iface->get_current_page_number) (document);
+    }
+  else
+    {
+      return -1;
+    }
+}
+
+/**
+ * atk_document_get_page_count:
+ * @document: the #AtkDocument
+ *
+ * Since: 2.12
+ *
+ * Returns: total page count of @document. -1 if not implemented, not
+ * know by the implementor or irrelevant.
+ */
+gint
+atk_document_get_page_count (AtkDocument *document)
+{
+  AtkDocumentIface *iface;
+
+  g_return_val_if_fail (ATK_IS_DOCUMENT (document), FALSE);
+
+  iface = ATK_DOCUMENT_GET_IFACE (document);
+
+  if (iface->get_page_count)
+    {
+      return (iface->get_page_count) (document);
+    }
+  else
+    {
+      return -1;
     }
 }

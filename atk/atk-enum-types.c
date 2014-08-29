@@ -26,7 +26,7 @@ atk_role_get_type (void)
   if (etype == 0) {
     static const GEnumValue values[] = {
       { ATK_ROLE_INVALID, "ATK_ROLE_INVALID", "invalid" },
-      { ATK_ROLE_ACCEL_LABEL, "ATK_ROLE_ACCEL_LABEL", "accel-label" },
+      { ATK_ROLE_ACCEL_LABEL, "ATK_ROLE_ACCEL_LABEL", "accelerator-label" },
       { ATK_ROLE_ALERT, "ATK_ROLE_ALERT", "alert" },
       { ATK_ROLE_ANIMATION, "ATK_ROLE_ANIMATION", "animation" },
       { ATK_ROLE_ARROW, "ATK_ROLE_ARROW", "arrow" },
@@ -100,7 +100,7 @@ atk_role_get_type (void)
       { ATK_ROLE_RULER, "ATK_ROLE_RULER", "ruler" },
       { ATK_ROLE_APPLICATION, "ATK_ROLE_APPLICATION", "application" },
       { ATK_ROLE_AUTOCOMPLETE, "ATK_ROLE_AUTOCOMPLETE", "autocomplete" },
-      { ATK_ROLE_EDITBAR, "ATK_ROLE_EDITBAR", "editbar" },
+      { ATK_ROLE_EDITBAR, "ATK_ROLE_EDITBAR", "edit-bar" },
       { ATK_ROLE_EMBEDDED, "ATK_ROLE_EMBEDDED", "embedded" },
       { ATK_ROLE_ENTRY, "ATK_ROLE_ENTRY", "entry" },
       { ATK_ROLE_CHART, "ATK_ROLE_CHART", "chart" },
@@ -126,6 +126,22 @@ atk_role_get_type (void)
       { ATK_ROLE_IMAGE_MAP, "ATK_ROLE_IMAGE_MAP", "image-map" },
       { ATK_ROLE_NOTIFICATION, "ATK_ROLE_NOTIFICATION", "notification" },
       { ATK_ROLE_INFO_BAR, "ATK_ROLE_INFO_BAR", "info-bar" },
+      { ATK_ROLE_LEVEL_BAR, "ATK_ROLE_LEVEL_BAR", "level-bar" },
+      { ATK_ROLE_TITLE_BAR, "ATK_ROLE_TITLE_BAR", "title-bar" },
+      { ATK_ROLE_BLOCK_QUOTE, "ATK_ROLE_BLOCK_QUOTE", "block-quote" },
+      { ATK_ROLE_AUDIO, "ATK_ROLE_AUDIO", "audio" },
+      { ATK_ROLE_VIDEO, "ATK_ROLE_VIDEO", "video" },
+      { ATK_ROLE_DEFINITION, "ATK_ROLE_DEFINITION", "definition" },
+      { ATK_ROLE_ARTICLE, "ATK_ROLE_ARTICLE", "article" },
+      { ATK_ROLE_LANDMARK, "ATK_ROLE_LANDMARK", "landmark" },
+      { ATK_ROLE_LOG, "ATK_ROLE_LOG", "log" },
+      { ATK_ROLE_MARQUEE, "ATK_ROLE_MARQUEE", "marquee" },
+      { ATK_ROLE_MATH, "ATK_ROLE_MATH", "math" },
+      { ATK_ROLE_RATING, "ATK_ROLE_RATING", "rating" },
+      { ATK_ROLE_TIMER, "ATK_ROLE_TIMER", "timer" },
+      { ATK_ROLE_DESCRIPTION_LIST, "ATK_ROLE_DESCRIPTION_LIST", "description-list" },
+      { ATK_ROLE_DESCRIPTION_TERM, "ATK_ROLE_DESCRIPTION_TERM", "description-term" },
+      { ATK_ROLE_DESCRIPTION_VALUE, "ATK_ROLE_DESCRIPTION_VALUE", "description-value" },
       { ATK_ROLE_LAST_DEFINED, "ATK_ROLE_LAST_DEFINED", "last-defined" },
       { 0, NULL, NULL }
     };
@@ -232,6 +248,8 @@ atk_state_type_get_type (void)
       { ATK_STATE_DEFAULT, "ATK_STATE_DEFAULT", "default" },
       { ATK_STATE_ANIMATED, "ATK_STATE_ANIMATED", "animated" },
       { ATK_STATE_VISITED, "ATK_STATE_VISITED", "visited" },
+      { ATK_STATE_CHECKABLE, "ATK_STATE_CHECKABLE", "checkable" },
+      { ATK_STATE_HAS_POPUP, "ATK_STATE_HAS_POPUP", "has-popup" },
       { ATK_STATE_LAST_DEFINED, "ATK_STATE_LAST_DEFINED", "last-defined" },
       { 0, NULL, NULL }
     };
@@ -302,6 +320,23 @@ atk_text_boundary_get_type (void)
   return etype;
 }
 GType
+atk_text_granularity_get_type (void)
+{
+  static GType etype = 0;
+  if (etype == 0) {
+    static const GEnumValue values[] = {
+      { ATK_TEXT_GRANULARITY_CHAR, "ATK_TEXT_GRANULARITY_CHAR", "char" },
+      { ATK_TEXT_GRANULARITY_WORD, "ATK_TEXT_GRANULARITY_WORD", "word" },
+      { ATK_TEXT_GRANULARITY_SENTENCE, "ATK_TEXT_GRANULARITY_SENTENCE", "sentence" },
+      { ATK_TEXT_GRANULARITY_LINE, "ATK_TEXT_GRANULARITY_LINE", "line" },
+      { ATK_TEXT_GRANULARITY_PARAGRAPH, "ATK_TEXT_GRANULARITY_PARAGRAPH", "paragraph" },
+      { 0, NULL, NULL }
+    };
+    etype = g_enum_register_static ("AtkTextGranularity", values);
+  }
+  return etype;
+}
+GType
 atk_text_clip_type_get_type (void)
 {
   static GType etype = 0;
@@ -345,6 +380,36 @@ atk_coord_type_get_type (void)
       { 0, NULL, NULL }
     };
     etype = g_enum_register_static ("AtkCoordType", values);
+  }
+  return etype;
+}
+
+/* enumerations from "atkvalue.h" */
+GType
+atk_value_type_get_type (void)
+{
+  static GType etype = 0;
+  if (etype == 0) {
+    static const GEnumValue values[] = {
+      { ATK_VALUE_VERY_WEAK, "ATK_VALUE_VERY_WEAK", "very-weak" },
+      { ATK_VALUE_WEAK, "ATK_VALUE_WEAK", "weak" },
+      { ATK_VALUE_ACCEPTABLE, "ATK_VALUE_ACCEPTABLE", "acceptable" },
+      { ATK_VALUE_STRONG, "ATK_VALUE_STRONG", "strong" },
+      { ATK_VALUE_VERY_STRONG, "ATK_VALUE_VERY_STRONG", "very-strong" },
+      { ATK_VALUE_VERY_LOW, "ATK_VALUE_VERY_LOW", "very-low" },
+      { ATK_VALUE_LOW, "ATK_VALUE_LOW", "low" },
+      { ATK_VALUE_MEDIUM, "ATK_VALUE_MEDIUM", "medium" },
+      { ATK_VALUE_HIGH, "ATK_VALUE_HIGH", "high" },
+      { ATK_VALUE_VERY_HIGH, "ATK_VALUE_VERY_HIGH", "very-high" },
+      { ATK_VALUE_VERY_BAD, "ATK_VALUE_VERY_BAD", "very-bad" },
+      { ATK_VALUE_BAD, "ATK_VALUE_BAD", "bad" },
+      { ATK_VALUE_GOOD, "ATK_VALUE_GOOD", "good" },
+      { ATK_VALUE_VERY_GOOD, "ATK_VALUE_VERY_GOOD", "very-good" },
+      { ATK_VALUE_BEST, "ATK_VALUE_BEST", "best" },
+      { ATK_VALUE_LAST_DEFINED, "ATK_VALUE_LAST_DEFINED", "last-defined" },
+      { 0, NULL, NULL }
+    };
+    etype = g_enum_register_static ("AtkValueType", values);
   }
   return etype;
 }

@@ -1,3 +1,323 @@
+Changes in version 2.12.0:
+==========================
+
+Translations
+
+A S Alam (pa), Claudio Arseni (it), Ask H. Larsen (da), Kjartan Maraas
+(nb), Andika Triwidada (id)
+
+Changes in version 2.11.92:
+==========================
+*
+* AtkValue:
+  * Bug 684576: AtkValue heavily refactored. Available now so
+    implementors could start migration on next cycle.
+  * Bug 726216: update atk.symbols, autotools for missing symbols and
+    files
+* AtkTableCell:
+  * Added symbols to be exported at atk.symbols
+
+Contributors:
+  Chun-wei Fan, Alejandro Piñeiro Iglesias
+
+Translations
+
+  Aurimas Černius (lt), Marek Černocký (cs), Fran Diéguez (gl), Piotr
+  Drąg (po), Rafael Ferreira (pt_BR), Attila Hammer (hu), Sphinx Jiang
+  (zh_CN), Chao-Hsiung Liao (zh_HK), Duarte Loreto (pt), Kjartan
+  Maraas (nb), Rūdolfs Mazurs (lv), Daniel Mustieles (es), Yuri
+  Myasoedov (ru), Claude Paroz (fr), Changwoo Ryu (ko), Мирослав
+  Николић (sr)
+
+
+Changes in version 2.11.90:
+==========================
+*
+* AtkComponent:
+  * Deprecate get_position and get_size in favor of get_extents.
+* AtkTable:
+  * Deprecate all index-based methods (atk_table_get_index_at,
+    atk_table_get_column_at_index, atk_table_get_row_at_index).
+* AtkTableCell:
+  * Bug 651353: Add AtkTableCell
+* Documentation:
+  * Document that atk_component_contains has a default implementation.
+  * Document AtkTableCell.
+  * Update AtkTable documentation after AtkTableCell addition.
+  * Document AtkRegistry (already existed but not properly included on
+    the documentation).
+  * API reference categorized (now easier to read).
+  * ATK overview added.
+  * Added some previously forgotten symbols (thanks to atk-unused.txt)
+
+Contributors:
+  Mike Gorse, Alejandro Piñeiro Iglesias
+
+Translations:
+  Jorge Pérez Pérez (an), Kjartan Maraas (nb), Andika Triwidada (id)
+
+Changes in version 2.11.6:
+==========================
+*
+* AtkText:
+  * Bug 723292: Getting the localized role name fails for
+    ATK_ROLE_EDITBAR
+  * Bug 653293: text-insert and text-remove are again detailed
+    signals. Document it.
+
+Contributors:
+  Alejandro Piñeiro Iglesias
+
+Translations:
+  Aurimas Černius (lt), Marek Černocký (cs), Tong Hui (zh_CN),
+  Chao-Hsiung Liao (zh_HK)
+
+Changes in version 2.11.5:
+==========================
+*
+* MSVC Builds: Rework Introspection Build and other miscellaneous
+  fixes
+
+Contributors:
+  Chun-wei Fan
+
+Translations:
+  Yosef Or Boczko (he), Dimitris Spingos (el), Peter Vágner (sk)
+
+Changes in version 2.11.4:
+==========================
+*
+* AtkRole:
+  * Bug 720065: add roles for description lists
+* Deprecations:
+  * Bug 476674: deprecate table properties that depend on the
+    row/column number
+  * Bug 652798: kill AtkMisc
+  * Deprecate connect/remove_property_change_handler
+  * Deprecate atk_role_register
+* Documentation:
+  * Bug 644747: improve documentation for AtkObject::property-change
+  * Improved AtkUtil documentation
+  * Updated new symbols sections on documentation
+  * Not using GTK-Doc tag "Virtual" anymore, as is deprecated
+* Building:
+  * Bug 644756: remove atkintl.h in favour of gi18n-lib.h from glib
+  * Bug 652965: include atk-enum-types.h on atk.h
+  * Fixed some gobject-introspection warnings
+  * Replace INCLUDES for AM_CPPFLAGS to silence automake deprecation
+    warnings.
+* Visual C++ Studio files:
+  * Add a PlatformToolsetTag on gengir MSVC Project
+  * Split the Property Sheets
+  * Update Visual C++ 2008 "install" phase
+  * Bug 690145: use Python to Generate the MSVC Projects
+* Miscellanea:
+  * Bug 572489: atk_text_range_extents should use g_return_if_fail
+  * Bug 653293: remove G_SIGNAL_DETAILED from atktext signals that
+    doesn't use details
+  * Bug 720095: add atk_object_peek_parent
+  * Updated AUTHORS and doap files
+  * Added role names on source file in order to be translated
+
+Contributors:
+   Chun-wei Fan, Kjartan Maraas, Alejandro Piñeiro Iglesias, Colin
+   Walters, Yue Wang
+
+Translations:
+  Fran Diéguez (gl), Michael Jayt (zh_CN), Daniel Mustieles (es),
+  Fábio Nogueira (pt_BR)
+
+
+Changes in version 2.11.3:
+==========================
+*
+* Bug 709214: Need API to get the document's current page number and
+*  page count
+* Updated Greek translation
+
+Changes in version 2.11.2:
+==========================
+*
+* AtkRole:
+  * Bug 709106: add media (audio and video) roles
+  * Bug 712586: new ATK roles for ARIA roles (plus rating)
+    * This includes: ATK_ROLE_DEFINITION, ATK_ROLE_ARTICLE,
+      ATK_ROLE_LANDMARK, ATK_ROLE_LOG, ATK_ROLE_MARQUEE,
+      ATK_ROLE_MATH, ATK_ROLE_RATING, ATK_ROLE_TIMER,
+* AtkState:
+  * Bug 712576: add ATK_STATE_CHECKABLE
+  * Bug 712581: add ATK_STATE_HAS_POPUP
+* AtkDocument:
+  * Bug 709106: add page-changed-signal
+  * Deprecated atk_document_get_document and
+    atk_document_get_document_type
+  * Added testdocument on tests directory
+* Documentation:
+  * Update documentation for selected_link method and property
+  * Improve documentation of AtkAttribute and AtkAttributeSet
+* Updated Galician and Spanish translations
+
+Changes in version 2.11.1:
+==========================
+*
+* Bug 684667: Improve AtkObject::children-changed documentation
+* Bug 709351: new role ATK_ROLE_TITLE_BAR
+* Bug 710463: new role ATK_ROLE_BLOCK_QUOTE
+* Updated Spanish translation
+
+Changes in version 2.10.0:
+==========================
+*
+* Documentation:
+  * Bug 684667: improve documentation for AtkObject::children-changed
+    signal
+* Visuall C++ Builds: Use Custom Build Rules
+* Updated Aragonese and Japanese translation.
+
+Changes in version 2.9.4:
+==========================
+*
+* Deprecations:
+  * Bug 649575: Deprecate AtkObject::focus-event signal and all
+    related methods
+  * Bug 653291: Deprecate 'text-changed' signal (in favour of
+    'text-insert' and 'text-remove').
+  * Bug 573539: Deprecate 'link-selected' property (at AtkHyperlink)
+  * Bug 705580: Implement atk_text_get_string_at_offset and deprecate
+    old API
+  * Remove 'text-update' signal (without deprecation, as was not used
+    and can be removed without breaking ABI/API)
+* Documentation:
+  * Removed unneeded comments at atk_implementor_ref_accessible and
+    about glib usage.
+  * Bug 684665: removing several .sgml files and fixing gtk-doc
+    warnings
+  * Bug 684705: little update on 'text-insert' and 'text-remove'
+    documentation
+  * Bug 491998: add documentation for AtkRectangle
+* Tests:
+  * Refactor test suite: no longer a loadable module but an standalone
+    executable.
+  * Split testrelation into testrelation and testrole.
+  * Execute all role tests, doesn't matter if one fails
+* Bugfixing and miscellanea:
+  * Bug 704092: Fix and off-by-one in role names
+  * Bug 705290: Use generated enum type for AtkRole to get the role name
+  * Drop use of ATK_DISABLE_DEPRECATED guards in ATK
+
+
+Changes in version 2.9.3:
+==========================
+*
+* Bug 697968: Deprecate atk_text_get_text_{before,after}_offset()
+  * Deprecated atk_text_get_text_{before,after}_offset()
+  * Deprecated ATK_TEXT_BOUNDARY_WORD_END,
+    ATK_TEXT_BOUNDARY_SENTENCE_END and ATK_TEXT_BOUNDARY_LINE_END on
+    the documentation.
+  * Updated atk_text_get_text_{at,before,after}_offset() documentation
+* Bug 701503: Fix documentation for atk_object_get_attributes()
+* Removed pads from interfaces
+
+Changes in version 2.9.2:
+==========================
+*
+* Leak management:
+  * Bug 699262: Nullify the gobject cache accessible when the accessble is finalized.
+  * Bug 699368: Fix typo - parameter is _obj not obj. Set feed to NULL
+  * Bug 699256: Free 'embedded_plug_id' when destroyed
+* Tests:
+  * Bug 696466: Fix logic when testing for empty state set
+  * Bug 696409: fix hyphenation on testrelation.c
+* Documentation:
+  * Include atk_object_get_object_locale documentation
+  * Fix having a repeated id on the main doc template
+  * Bug 700800: Improve documentation for AtkPlug and AtkSocket
+
+
+Changes in version 2.8.0:
+==========================
+*
+* Updated Visual C++ configuration files
+  * Make entries more consistent with the other GNOME Visual Studio
+    projects.
+  * Enable the building of introspection files for Visual C++ builds
+  * bgo694255: Visual C++ builds: Integrate building of introspection files
+* Updated Slovak, Portuguese and Tadjik translation.
+
+Changes in version 2.7.91:
+==========================
+*
+* atkobject: added a explicit include to locale.h
+
+Changes in version 2.7.90:
+==========================
+*
+* Bug 694117
+*  * atkobject: add atk_object_get_object_locale
+*  * atkdocument: deprecate atk_document_get_locale
+
+Changes in version 2.7.5:
+==========================
+*
+* build: Use GNOME_COMPILE_WARNINGS
+* atkhyperlink: Ensure we get even deprecated prototypes
+* Bug 651343: add ATK_ROLE_LEVEL_BAR
+* Prepare Visual Studio 2010 projects for Visual Studio 2012
+* Updated Uyghur translations
+
+Changes in version 2.7.4:
+==========================
+*
+* Bug 690379: Atk lacks any kind of version utilities
+* Fixed out of tree builds caused by fix of bug 690379
+* Bug 656750: AtkWindow requires documentation
+
+Changes in version 2.7.3:
+==========================
+*
+* Bug 689907: Problems with the management of
+*  ATK_STATE_SELECTABLE/ATK_STATE_SELECTED states at AtkObject
+* Bug 686746: Port introspection fixes from Vala
+* Bug 689952: Add introspection support for Windows MSVC builds
+* Other Visual C++ configuration files:
+*  * Use MultiByte character set
+
+Changes in version 2.7.2:
+==========================
+*
+* Bug 686801: Extend atk_add_global_event_listener in order to support
+*   signal details
+* Updated Thai translation.
+
+Changes in version 2.6.0:
+==========================
+*
+* Updated Japanese and Brazilian Portuguese translations.
+
+Changes in version 2.5.91:
+==========================
+*
+* Bug 635332: Include C header information in GIR
+* Added atk_relation_set_contains_target to atk.symbols. That symbol
+*   was added in commmit a1d5ca86 (bug 672869).
+* Updated Polish, Galician and Latvian translations.
+
+Changes in version 2.5.4:
+=========================
+*
+* Bug 672869: Required a method to check if a relationset contains a
+*   relation taking into account relationship and target
+
+Changes in version 2.5.3:
+=========================
+*
+* Added extra doc on atk_remove_[key/global]_event_listener
+* Fixed compilation with some gcc versions/combination of options
+* Provide a default implementation for
+*   atk_util_[add/remove]_global_event_listner
+* Bug 478587: "accessible-role" - invalid default value
+* Updated Catalan, Catalan (Valencian), Greek, Norwegian, Spanish
+
 Changes in version 2.4.0:
 =========================
 *
@@ -83,7 +403,7 @@ Changes in version 2.0.1:
 * Bug 649307: Clarify AtkPlug and AtkSocket docs
 * Bug 551489: Fix doc of atk_text_get_text_before_offset
 * Bug 588083: Information about return value of some AtkText methods can be clearer
-* Added Alejandro Pi�eiro Iglesias as maintainer
+* Added Alejandro Piñeiro Iglesias as maintainer
 * Updated .gitignore
 * VS 2008/2010 support update
 * New Zulu translation added, Esperanto and Catalan updated
