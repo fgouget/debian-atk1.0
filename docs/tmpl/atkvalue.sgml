@@ -2,24 +2,19 @@
 AtkValue
 
 <!-- ##### SECTION Short_Description ##### -->
-The ATK interface implemented by valuators and components which display or
-select a value from a bounded range of values.
+
 
 <!-- ##### SECTION Long_Description ##### -->
 <para>
-#AtkValue should be implemented for components which either display a
-value from a bounded range, or which allow the user to specify a value
-from a bounded range, or both.  For instance, most sliders and range
-controls, as well as dials, should have #AtkObject representations which
-implement #AtkValue on the component's behalf.  #AtKValues may be
-read-only, in which case attempts to alter the value return FALSE to
-indicate failure.
+
 </para>
+
 
 <!-- ##### SECTION See_Also ##### -->
 <para>
 
 </para>
+
 
 <!-- ##### SECTION Stability_Level ##### -->
 
@@ -29,10 +24,18 @@ indicate failure.
 
 <!-- ##### STRUCT AtkValue ##### -->
 <para>
-The AtkValue structure does not contain any fields.
 
 </para>
 
+
+<!-- ##### SIGNAL AtkValue::value-changed ##### -->
+<para>
+
+</para>
+
+@atkvalue: the object which received the signal.
+@arg1: 
+@arg2: 
 
 <!-- ##### FUNCTION atk_value_get_current_value ##### -->
 <para>
@@ -78,5 +81,51 @@ The AtkValue structure does not contain any fields.
 
 @obj: 
 @value: 
+
+
+<!-- ##### FUNCTION atk_value_get_value_and_text ##### -->
+<para>
+
+</para>
+
+@obj: 
+@value: 
+@text: 
+
+
+<!-- ##### FUNCTION atk_value_get_range ##### -->
+<para>
+
+</para>
+
+@obj: 
+@Returns: 
+
+
+<!-- ##### FUNCTION atk_value_get_increment ##### -->
+<para>
+
+</para>
+
+@obj: 
+@Returns: 
+
+
+<!-- ##### FUNCTION atk_value_get_sub_ranges ##### -->
+<para>
+
+</para>
+
+@obj: 
+@Returns: 
+
+
+<!-- ##### FUNCTION atk_value_set_value ##### -->
+<para>
+
+</para>
+
+@obj: 
+@new_value: 
 
 

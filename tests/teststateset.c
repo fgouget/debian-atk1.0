@@ -34,7 +34,7 @@ test_state_set (void)
   state_set1 = atk_state_set_new ();
 
   b_val = atk_state_set_is_empty (state_set1);  
-  if (b_val)
+  if (!b_val)
   {
     g_print ("New state set is not empty\n");
     return FALSE;
@@ -48,7 +48,7 @@ test_state_set (void)
   }
 
   b_val = atk_state_set_is_empty (state_set1);  
-  if (!b_val)
+  if (b_val)
   {
     g_print ("New state set is empty when it should not be\n");
     return FALSE;
@@ -267,11 +267,11 @@ test_state (void)
 }
 
 int
-gtk_module_init (gint argc, char* argv[])
+main (gint argc, char* argv[])
 {
   gboolean b_ret;
 
-  g_print("State Set test module loaded\n");
+  g_print("Starting State Set test suite\n");
 
   b_ret = test_state_set ();
   if (b_ret)

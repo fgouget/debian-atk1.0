@@ -13,7 +13,7 @@ else
 no_undefined =
 endif
 
-INCLUDES = \
+AM_CPPFLAGS = \
 	-I$(top_srcdir)		\
 	-DG_DISABLE_DEPRECATED	\
 	-DATK_DISABLE_DEPRECATED	\
@@ -45,6 +45,9 @@ atk_sources = 	\
 	atkobject.c		\
 	atkobjectfactory.c	\
 	atkplug.c		\
+	atkprivate.h		\
+	atkprivate.c		\
+	atkrange.c		\
 	atkregistry.c		\
 	atkrelation.c		\
 	atkrelationset.c	\
@@ -54,10 +57,12 @@ atk_sources = 	\
 	atkstateset.c		\
 	atkstreamablecontent.c	\
 	atktable.c		\
+	atktablecell.c		\
 	atktext.c		\
 	atkutil.c		\
 	atkmisc.c		\
-	atkvalue.c \
+	atkvalue.c 		\
+	atkversion.c 		\
 	atkwindow.c
 
 libatk_1_0_la_SOURCES = 	\
@@ -67,7 +72,6 @@ libatk_1_0_la_SOURCES = 	\
 libatkincludedir=$(includedir)/atk-1.0/atk
 
 atk_headers = \
-        atk.h			\
         atkaction.h		\
         atkcomponent.h		\
         atkdocument.h		\
@@ -82,6 +86,7 @@ atk_headers = \
 	atkobjectfactory.h	\
         atkplug.h		\
         atkimage.h		\
+	atkrange.h		\
         atkregistry.h		\
         atkrelation.h		\
         atkrelationtype.h	\
@@ -92,6 +97,7 @@ atk_headers = \
         atkstateset.h		\
         atkstreamablecontent.h	\
         atktable.h		\
+        atktablecell.h		\
         atktext.h		\
         atkutil.h		\
         atkmisc.h		\
@@ -99,7 +105,9 @@ atk_headers = \
         atkwindow.h
 
 libatkinclude_HEADERS =		\
+        atk.h			\
 	$(atk_headers)		\
+	$(top_builddir)/atk/atkversion.h \
 	atk-enum-types.h
 
 
@@ -156,14 +164,15 @@ introspection_sources = \
     $(atk_headers)	\
     $(atk_sources)
 introspection_generated_sources = \
+    $(top_builddir)/atk/atkversion.h 	\
     atk-enum-types.c	\
     atk-enum-types.h
 
 Atk-1.0.gir: libatk-1.0.la Makefile
 Atk_1_0_gir_INCLUDES = GObject-2.0
-Atk_1_0_gir_CFLAGS = $(INCLUDES)
+Atk_1_0_gir_CFLAGS = $(AM_CPPFLAGS)
 Atk_1_0_gir_LIBS = libatk-1.0.la
-Atk_1_0_gir_SCANNERFLAGS = --pkg-export atk --warn-all
+Atk_1_0_gir_SCANNERFLAGS = --pkg-export atk --warn-all --c-include "atk/atk.h"
 Atk_1_0_gir_FILES = \
     $(addprefix $(srcdir)/, $(introspection_sources))	\
     $(introspection_generated_sources)
@@ -216,39 +225,7 @@ atk-$(ATK_API_VERSION).lib: libatk-$(ATK_API_VERSION).la atk.def
 	lib -machine:$(LIB_EXE_MACHINE_FLAG) -name:libatk-$(ATK_API_VERSION)-$(LT_CURRENT_MINUS_AGE).dll -def:atk.def -out:$@
 
 
-EXTRA_DIST = atk.symbols atk.rc.in atkmarshal.list atkintl.h atk.rc
-
-dist-hook: ../build/win32/vs9/atk.vcproj ../build/win32/vs10/atk.vcxproj ../build/win32/vs10/atk.vcxproj.filters
-
-../build/win32/vs9/atk.vcproj: ../build/win32/vs9/atk.vcprojin
-	for F in $(libatk_1_0_la_SOURCES); do \
-		case $$F in \
-		*.c) echo '   <File RelativePath="..\..\..\atk\'$$F'" />' \
-		     ;; \
-		esac; \
-	done >libatk.sourcefiles
-	$(CPP) -P - <$(top_srcdir)/build/win32/vs9/atk.vcprojin >$@
-	rm libatk.sourcefiles
-	
-../build/win32/vs10/atk.vcxproj: ../build/win32/vs10/atk.vcxprojin
-	for F in $(libatk_1_0_la_SOURCES); do \
-		case $$F in \
-		*.c) echo '    <ClCompile Include="..\..\..\atk\'$$F'" />' \
-		     ;; \
-		esac; \
-	done >libatk.vs10.sourcefiles
-	$(CPP) -P - <$(top_srcdir)/build/win32/vs10/atk.vcxprojin >$@
-	rm libatk.vs10.sourcefiles
-	
-../build/win32/vs10/atk.vcxproj.filters: ../build/win32/vs10/atk.vcxproj.filtersin
-	for F in $(libatk_1_0_la_SOURCES); do \
-		case $$F in \
-		*.c) echo '    <ClCompile Include="..\..\..\atk\'$$F'"><Filter>Source Files</Filter></ClCompile>' \
-		     ;; \
-		esac; \
-	done >libatk.vs10.sourcefiles.filters
-	$(CPP) -P - <$(top_srcdir)/build/win32/vs10/atk.vcxproj.filtersin >$@
-	rm libatk.vs10.sourcefiles.filters
+EXTRA_DIST = atk.symbols atk.rc.in atkmarshal.list atk.rc atkversion.h.in
 
 DISTCLEANFILES = \
   stamp-atkmarshal.h stamp-atkmarshal.c \

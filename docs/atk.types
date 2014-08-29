@@ -9,6 +9,7 @@ atk_hyperlink_get_type
 atk_hypertext_get_type
 atk_image_get_type
 atk_implementor_get_type
+atk_misc_get_type
 atk_no_op_object_get_type
 atk_no_op_object_factory_get_type
 atk_object_get_type
@@ -20,6 +21,8 @@ atk_selection_get_type
 atk_state_set_get_type
 atk_streamable_content_get_type
 atk_table_get_type
+atk_table_cell_get_type
 atk_text_get_type
 atk_util_get_type
 atk_value_get_type
+atk_window_get_type

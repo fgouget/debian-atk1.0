@@ -2,28 +2,19 @@
 AtkComponent
 
 <!-- ##### SECTION Short_Description ##### -->
-The ATK interface provided by UI components which occupy a physical area on
-the screen.
+
 
 <!-- ##### SECTION Long_Description ##### -->
 <para>
-#AtkComponent should be implemented by most if not all UI elements with
-an actual on-screen presence, i.e. components which can be said to have
-a screen-coordinate bounding box.  Virtually all widgets will need to
-have #AtkComponent implementations provided for their corresponding
-#AtkObject class.  In short, only UI elements which are *not* GUI
-elements will omit this ATK interface.
+
 </para>
-<para>
-A possible exception might be textual information with a transparent
-background, in which case text glyph bounding box information is
-provided by #AtkText.
-</para>
+
 
 <!-- ##### SECTION See_Also ##### -->
 <para>
 
 </para>
+
 
 <!-- ##### SECTION Stability_Level ##### -->
 
@@ -33,19 +24,58 @@ provided by #AtkText.
 
 <!-- ##### STRUCT AtkComponent ##### -->
 <para>
-The AtkComponent structure does not contain any fields.
 
 </para>
 
 
 <!-- ##### SIGNAL AtkComponent::bounds-changed ##### -->
 <para>
-The 'bounds-changed" signal is emitted when the bposition or size of the 
-a component changes.
+
 </para>
 
 @atkcomponent: the object which received the signal.
-@arg1: The AtkRectangle giving the new position and size.
+@arg1: 
+
+<!-- ##### STRUCT AtkComponentIface ##### -->
+<para>
+
+</para>
+
+@parent: 
+@add_focus_handler: 
+@contains: 
+@ref_accessible_at_point: 
+@get_extents: 
+@get_position: 
+@get_size: 
+@grab_focus: 
+@remove_focus_handler: 
+@set_extents: 
+@set_position: 
+@set_size: 
+@get_layer: 
+@get_mdi_zorder: 
+@bounds_changed: 
+@get_alpha: 
+
+<!-- ##### USER_FUNCTION AtkFocusHandler ##### -->
+<para>
+
+</para>
+
+@object: 
+@focus_in: 
+
+
+<!-- ##### STRUCT AtkRectangle ##### -->
+<para>
+
+</para>
+
+@x: 
+@y: 
+@width: 
+@height: 
 
 <!-- ##### FUNCTION atk_component_add_focus_handler ##### -->
 <para>

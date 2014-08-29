@@ -2,23 +2,19 @@
 AtkEditableText
 
 <!-- ##### SECTION Short_Description ##### -->
-The ATK interface implemented by components containing user-editable text content.
+
 
 <!-- ##### SECTION Long_Description ##### -->
 <para>
-#AtkEditableText should be implemented by UI components which contain
-text which the user can edit, via the #AtkObject corresponding to that
-component (see #AtkObject).
+
 </para>
-<para>
-#AtkEditableText is a subclass of #AtkText, and as such, an object which
-implements #AtkEditableText is by definition an #AtkText implementor as well.
-</para>
+
 
 <!-- ##### SECTION See_Also ##### -->
 <para>
-#AtkText
+
 </para>
+
 
 <!-- ##### SECTION Stability_Level ##### -->
 
@@ -28,7 +24,6 @@ implements #AtkEditableText is by definition an #AtkText implementor as well.
 
 <!-- ##### STRUCT AtkEditableText ##### -->
 <para>
-The AtkEditableText structure does not contain any fields.
 
 </para>
 

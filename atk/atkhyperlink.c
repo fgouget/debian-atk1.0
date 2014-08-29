@@ -17,8 +17,23 @@
  * Boston, MA 02111-1307, USA.
  */
 
+#include "config.h"
 #include "atkhyperlink.h"
-#include "atkintl.h"
+#include <glib/gi18n-lib.h>
+
+/**
+ * SECTION:atkhyperlink
+ * @Short_description: An ATK object which encapsulates a link or set
+ *  of links in a hypertext document.
+ * @Title:AtkHyperlink
+ *
+ * An ATK object which encapsulates a link or set of links (for
+ * instance in the case of client-side image maps) in a hypertext
+ * document.  It may implement the AtkAction interface.  AtkHyperlink
+ * may also be used to refer to inline embedded content, since it
+ * allows specification of a start and end offset within the host
+ * AtkHypertext object.
+ */
 
 enum
 {
@@ -97,6 +112,16 @@ atk_hyperlink_class_init (AtkHyperlinkClass *klass)
 
   klass->link_activated = NULL;
 
+  /**
+   * AtkHyperlink:selected-link:
+   *
+   * Selected link
+   *
+   * Deprecated: Since 1.8. This property is deprecated since ATK
+   * version 1.8. Please use ATK_STATE_FOCUSABLE for all links, and
+   * ATK_STATE_FOCUSED for focused links.
+   *
+   */
   g_object_class_install_property (gobject_class,
                                    PROP_SELECTED_LINK,
                                    g_param_spec_boolean ("selected-link",
@@ -131,6 +156,13 @@ atk_hyperlink_class_init (AtkHyperlinkClass *klass)
                                                      G_MAXINT,
                                                      0,
                                                      G_PARAM_READABLE));
+
+  /**
+   * AtkHyperlink::link-activated:
+   * @atkhyperlink: the object which received the signal.
+   *
+   * The signal link-activated is emitted when a link is activated.
+   */
   atk_hyperlink_signals[LINK_ACTIVATED] =
     g_signal_new ("link_activated",
                   G_TYPE_FROM_CLASS (klass),
@@ -162,7 +194,8 @@ atk_hyperlink_real_get_property (GObject    *object,
   switch (prop_id)
     {
     case PROP_SELECTED_LINK:
-      g_value_set_boolean (value, atk_hyperlink_is_selected_link (link));
+      // This property is deprecated, also the method to get the value
+      g_value_set_boolean (value, FALSE);
       break;
     case PROP_NUMBER_ANCHORS:
       g_value_set_int (value,  atk_hyperlink_get_n_anchors (link));
@@ -311,7 +344,7 @@ atk_hyperlink_is_valid (AtkHyperlink *link)
  *           content inline.  Ordinary HTML links will usually return
  *           %FALSE, but an inline &lt;src&gt; HTML element will return
  *           %TRUE.
-a *
+ *
  * Returns: whether or not this link displays its content inline.
  *
  **/
@@ -359,11 +392,11 @@ atk_hyperlink_get_n_anchors (AtkHyperlink *link)
  *
  * Since: 1.4
  *
- * @Deprecated: This method is deprecated since ATK version 1.8.
- * Please use ATK_STATE_SELECTED to indicate when a hyperlink within a
- * Hypertext container is selected.
+ * Deprecated: This method is deprecated since ATK version 1.8.
+ * Please use ATK_STATE_FOCUSABLE for all links, and ATK_STATE_FOCUSED
+ * for focused links.
  *
- * Returns: True is the AtkHyperlink is selected, False otherwise
+ * Returns: True if the AtkHyperlink is selected, False otherwise
  **/
 gboolean
 atk_hyperlink_is_selected_link (AtkHyperlink *link)

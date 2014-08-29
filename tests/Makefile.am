@@ -4,32 +4,31 @@ else
 no_undefined =
 endif
 
-noinst_LTLIBRARIES =  \
-	libteststateset.la	\
-	libtestrelation.la
-
 libatk = $(top_builddir)/atk/libatk-$(ATK_API_VERSION).la
 
-INCLUDES = -I$(top_srcdir)	\
+AM_CPPFLAGS = -I$(top_srcdir)	\
 	-DG_DISABLE_DEPRECATED	\
 	$(DEP_CFLAGS)
 DEPS = \
 	$(libatk)
 
-moduledir = $(libdir)/gtk-2.0/modules
+noinst_PROGRAMS = testdocument \
+		  testrole  \
+		  testrelation  \
+		  teststateset  \
+		  testvalue
 
-libteststateset_la_SOURCES = teststateset.c
-libteststateset_la_LDFLAGS = \
-	-rpath $(moduledir) \
-	$(no_undefined)	\
-	-avoid-version	\
-	-module
-libteststateset_la_LIBADD = $(libatk) $(DEP_LIBS)
+LDADD = $(libatk) $(DEP_LIBS)
 
-libtestrelation_la_SOURCES = testrelation.c
-libtestrelation_la_LDFLAGS = \
-	-rpath $(moduledir) \
-	$(no_undefined)	\
-	-avoid-version	\
-	-module
-libtestrelation_la_LIBADD = $(libatk) $(DEP_LIBS)
+testdocument_SOURCES = testdocument.c
+testrole_SOURCES = testrole.c
+testrelation_SOURCES = testrelation.c
+teststateset_SOURCES = teststateset.c
+testvalue_SOURCES = testvalue.c
+
+testatk_vc.mak: testatk_vc.makin $(top_srcdir)/build/atk_msvc_files.py $(top_srcdir)/build/msvcfiles.py
+	$(PYTHON) $(top_srcdir)/build/atk_msvc_files.py -t nmake-exe
+
+EXTRA_DIST = testatk_vc.makin testatk_vc.mak
+
+DISTCLEANFILES = testatk_vc.mak

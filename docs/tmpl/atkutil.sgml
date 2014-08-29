@@ -2,19 +2,19 @@
 AtkUtil
 
 <!-- ##### SECTION Short_Description ##### -->
-A set of ATK utility functions for event and toolkit support.
+
 
 <!-- ##### SECTION Long_Description ##### -->
 <para>
-A set of ATK utility functions which are used to support event registration of
-various types, and obtaining the 'root' accessible of a process and
-information about the current ATK implementation and toolkit version.
+
 </para>
+
 
 <!-- ##### SECTION See_Also ##### -->
 <para>
 
 </para>
+
 
 <!-- ##### SECTION Stability_Level ##### -->
 
@@ -24,9 +24,23 @@ information about the current ATK implementation and toolkit version.
 
 <!-- ##### STRUCT AtkUtil ##### -->
 <para>
-The AtkUtil struct does not contain any fields.
+
 </para>
 
+
+<!-- ##### STRUCT AtkUtilClass ##### -->
+<para>
+
+</para>
+
+@parent: 
+@add_global_event_listener: 
+@remove_global_event_listener: 
+@add_key_event_listener: 
+@remove_key_event_listener: 
+@get_root: 
+@get_toolkit_name: 
+@get_toolkit_version: 
 
 <!-- ##### ENUM AtkCoordType ##### -->
 <para>
@@ -131,7 +145,7 @@ The AtkUtil struct does not contain any fields.
 </para>
 
 @event: 
-@func_data: 
+@user_data: 
 @Returns: 
 
 

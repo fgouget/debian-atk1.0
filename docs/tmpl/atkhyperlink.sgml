@@ -2,21 +2,19 @@
 AtkHyperlink
 
 <!-- ##### SECTION Short_Description ##### -->
-An ATK object which encapsulates a link or set of links in a hypertext document.
+
 
 <!-- ##### SECTION Long_Description ##### -->
 <para>
-An ATK object which encapsulates a link or set of links 
-(for instance in the case of client-side image maps) in a hypertext document.
-It may implement the AtkAction interface.  AtkHyperlink may also be used
-to refer to inline embedded content, since it allows specification of a start
-and end offset within the host AtkHypertext object.
+
 </para>
+
 
 <!-- ##### SECTION See_Also ##### -->
 <para>
 
 </para>
+
 
 <!-- ##### SECTION Stability_Level ##### -->
 
@@ -26,14 +24,13 @@ and end offset within the host AtkHypertext object.
 
 <!-- ##### STRUCT AtkHyperlink ##### -->
 <para>
-The AtkHyperlink structure should not be accessed directly.
 
 </para>
 
 
 <!-- ##### SIGNAL AtkHyperlink::link-activated ##### -->
 <para>
-The signal link-activated is emitted when a link is activated.
+
 </para>
 
 @atkhyperlink: the object which received the signal.
@@ -137,6 +134,5 @@ The signal link-activated is emitted when a link is activated.
 
 @link_: 
 @Returns: 
-@Deprecated: Please use ATK_STATE_SELECTED to indicate when a hyperlink within a Hypertext container is selected.
 
 

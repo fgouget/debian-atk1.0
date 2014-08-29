@@ -30,6 +30,8 @@ GType atk_text_attribute_get_type (void);
 #define ATK_TYPE_TEXT_ATTRIBUTE (atk_text_attribute_get_type())
 GType atk_text_boundary_get_type (void);
 #define ATK_TYPE_TEXT_BOUNDARY (atk_text_boundary_get_type())
+GType atk_text_granularity_get_type (void);
+#define ATK_TYPE_TEXT_GRANULARITY (atk_text_granularity_get_type())
 GType atk_text_clip_type_get_type (void);
 #define ATK_TYPE_TEXT_CLIP_TYPE (atk_text_clip_type_get_type())
 /* enumerations from "atkutil.h" */
@@ -37,6 +39,9 @@ GType atk_key_event_type_get_type (void);
 #define ATK_TYPE_KEY_EVENT_TYPE (atk_key_event_type_get_type())
 GType atk_coord_type_get_type (void);
 #define ATK_TYPE_COORD_TYPE (atk_coord_type_get_type())
+/* enumerations from "atkvalue.h" */
+GType atk_value_type_get_type (void);
+#define ATK_TYPE_VALUE_TYPE (atk_value_type_get_type())
 G_END_DECLS
 
 #endif /* __ATK_ENUM_TYPES_H__ */

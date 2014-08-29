@@ -21,9 +21,29 @@
 #include "atkmarshal.c"
 #include "config.h"
 
+/**
+ * SECTION:atkutil
+ * @Short_description: A set of ATK utility functions for event and toolkit support.
+ * @Title:AtkUtil
+ *
+ * A set of ATK utility functions which are used to support event
+ * registration of various types, and obtaining the 'root' accessible
+ * of a process and information about the current ATK implementation
+ * and toolkit version.
+ */
+
 static void atk_util_class_init (AtkUtilClass *klass);
 
 static AtkObject *previous_focus_object = NULL;
+
+typedef struct _AtkUtilListenerInfo AtkUtilListenerInfo;
+struct _AtkUtilListenerInfo
+{
+  gint key;
+  guint signal_id;
+  gulong hook_id;
+};
+static GHashTable *listener_list = NULL;
 
 GType
 atk_util_get_type (void)
@@ -49,16 +69,6 @@ atk_util_get_type (void)
   return type;
 }
 
-static void
-atk_util_class_init (AtkUtilClass *klass)
-{
-  klass->add_global_event_listener = NULL;
-  klass->remove_global_event_listener = NULL;
-  klass->get_root = NULL;
-  klass->get_toolkit_name = NULL;
-  klass->get_toolkit_version = NULL;
-}
-
 /*
  * This file supports the addition and removal of multiple focus handlers
  * as long as they are all called in the same thread.
@@ -71,7 +81,7 @@ static gboolean init_done = FALSE;
  * Array of FocusTracker structs
  */
 static GArray *trackers = NULL;
-static guint  index = 0;
+static guint  global_index = 0;
 
 typedef struct _FocusTracker FocusTracker;
 
@@ -88,6 +98,11 @@ struct _FocusTracker {
  * This function should be called by an implementation of the
  * ATK interface if any specific work needs to be done to enable
  * focus tracking.
+ *
+ * Deprecated: This method is deprecated since ATK version
+ * 2.9.4. Focus tracking has been dropped as a feature to be
+ * implemented by ATK itself.
+ *
  **/
 void
 atk_focus_tracker_init (AtkEventListenerInit    init)
@@ -103,6 +118,11 @@ atk_focus_tracker_init (AtkEventListenerInit    init)
  *
  * Adds the specified function to the list of functions to be called
  * when an object receives focus.
+ *
+ * Deprecated: This method is deprecated since ATK version
+ * 2.9.4. Focus tracking has been dropped as a feature to be
+ * implemented by ATK itself. If you need focus tracking on your
+ * implementation, subscribe to the state-changed:focused signal.
  *
  * Returns: added focus tracker id, or 0 on failure.
  **/
@@ -124,10 +144,10 @@ atk_add_focus_tracker (AtkEventListener   focus_tracker)
   {
     FocusTracker item;
 
-    item.index = ++index;
+    item.index = ++global_index;
     item.func = focus_tracker;
     trackers = g_array_append_val (trackers, item);
-    return index;
+    return global_index;
   }
   else
   {
@@ -138,6 +158,11 @@ atk_add_focus_tracker (AtkEventListener   focus_tracker)
 /**
  * atk_remove_focus_tracker:
  * @tracker_id: the id of the focus tracker to remove
+ *
+ * Deprecated: This method is deprecated since ATK version
+ * 2.9.4. Focus tracking has been dropped as a feature to be
+ * implemented by ATK itself. If you need focus tracking on your
+ * implementation, subscribe to the state-changed:focused signal.
  *
  * Removes the specified focus tracker from the list of functions
  * to be called when any object receives focus.
@@ -171,6 +196,11 @@ atk_remove_focus_tracker (guint            tracker_id)
  *
  * Cause the focus tracker functions which have been specified to be
  * executed for the object.
+ *
+ * Deprecated: This method is deprecated since ATK version
+ * 2.9.4. Focus tracking has been dropped as a feature to be
+ * implemented by ATK itself.
+ *
  **/
 void
 atk_focus_tracker_notify (AtkObject       *object)
@@ -204,6 +234,116 @@ atk_focus_tracker_notify (AtkObject       *object)
     }
 }
 
+static guint
+add_listener (GSignalEmissionHook listener,
+              const gchar         *object_type,
+              const gchar         *signal_name,
+              const gchar         *detail_string,
+              const gchar         *hook_data)
+{
+  GType type;
+  guint signal_id;
+  gint  rc = 0;
+  static gint listener_idx = 1;
+  GQuark detail_quark = 0;
+
+  type = g_type_from_name (object_type);
+  if (type)
+    {
+      signal_id  = g_signal_lookup (signal_name, type);
+      detail_quark = g_quark_from_string (detail_string);
+
+      if (signal_id > 0)
+        {
+          AtkUtilListenerInfo *listener_info;
+
+          rc = listener_idx;
+
+          listener_info = g_new (AtkUtilListenerInfo, 1);
+          listener_info->key = listener_idx;
+          listener_info->hook_id =
+            g_signal_add_emission_hook (signal_id, detail_quark, listener,
+                                        g_strdup (hook_data),
+                                        (GDestroyNotify) g_free);
+          listener_info->signal_id = signal_id;
+
+	  g_hash_table_insert(listener_list, &(listener_info->key), listener_info);
+          listener_idx++;
+        }
+      else
+        {
+          g_debug ("Signal type %s not supported\n", signal_name);
+        }
+    }
+  else
+    {
+      g_warning("Invalid object type %s\n", object_type);
+    }
+  return rc;
+}
+
+static guint
+atk_util_real_add_global_event_listener (GSignalEmissionHook listener,
+                                         const gchar *event_type)
+{
+  guint rc = 0;
+  gchar **split_string;
+  guint length;
+
+  split_string = g_strsplit (event_type, ":", 0);
+  length = g_strv_length (split_string);
+
+  if ((length == 3) || (length == 4))
+    rc = add_listener (listener, split_string[1], split_string[2],
+                       split_string[3], event_type);
+
+  g_strfreev (split_string);
+
+  return rc;
+}
+
+static void
+atk_util_real_remove_global_event_listener (guint remove_listener)
+{
+  if (remove_listener > 0)
+    {
+      AtkUtilListenerInfo *listener_info;
+      gint tmp_idx = remove_listener;
+
+      listener_info = (AtkUtilListenerInfo *)
+        g_hash_table_lookup(listener_list, &tmp_idx);
+
+      if (listener_info != NULL)
+        {
+          /* Hook id of 0 and signal id of 0 are invalid */
+          if (listener_info->hook_id != 0 && listener_info->signal_id != 0)
+            {
+              /* Remove the emission hook */
+              g_signal_remove_emission_hook(listener_info->signal_id,
+                                            listener_info->hook_id);
+
+              /* Remove the element from the hash */
+              g_hash_table_remove(listener_list, &tmp_idx);
+            }
+          else
+            {
+              g_warning("Invalid listener hook_id %ld or signal_id %d\n",
+                        listener_info->hook_id, listener_info->signal_id);
+            }
+        }
+      else
+        {
+          g_warning("No listener with the specified listener id %d",
+                    remove_listener);
+        }
+    }
+  else
+    {
+      g_warning("Invalid listener_id %d", remove_listener);
+    }
+}
+
+
 /**
  * atk_add_global_event_listener:
  * @listener: the listener to notify
@@ -213,15 +353,28 @@ atk_focus_tracker_notify (AtkObject       *object)
  * when an ATK event of type event_type occurs.
  *
  * The format of event_type is the following:
- *  "ATK:<atk_type>:<atk_event>
+ *  "ATK:&lt;atk_type&gt;:&lt;atk_event&gt;:&lt;atk_event_detail&gt;
  *
- * Where "ATK" works as the namespace, <atk_interface> is the name of
- * the ATK type (interface or object) and <atk_event> is the name of
- * the signal defined on that interface.
+ * Where "ATK" works as the namespace, &lt;atk_interface&gt; is the name of
+ * the ATK type (interface or object), &lt;atk_event&gt; is the name of the
+ * signal defined on that interface and &lt;atk_event_detail&gt; is the
+ * gsignal detail of that signal. You can find more info about gsignal
+ * details here:
+ * http://developer.gnome.org/gobject/stable/gobject-Signals.html
+ *
+ * The first three parameters are mandatory. The last one is optional.
  *
  * For example:
  *   ATK:AtkObject:state-change
  *   ATK:AtkText:text-selection-changed
+ *   ATK:AtkText:text-insert:system
+ *
+ * Toolkit implementor note: ATK provides a default implementation for
+ * this virtual method. ATK implementors are discouraged from
+ * reimplementing this method.
+ *
+ * Toolkit implementor note: this method is not intended to be used by
+ * ATK implementors but by ATK consumers.
  *
  * Returns: added event listener id, or 0 on failure.
  **/
@@ -248,6 +401,16 @@ atk_add_global_event_listener (GSignalEmissionHook listener,
 /**
  * atk_remove_global_event_listener:
  * @listener_id: the id of the event listener to remove
+ *
+ * @listener_id is the value returned by #atk_add_global_event_listener
+ * when you registered that event listener.
+ *
+ * Toolkit implementor note: ATK provides a default implementation for
+ * this virtual method. ATK implementors are discouraged from
+ * reimplementing this method.
+ *
+ * Toolkit implementor note: this method is not intended to be used by
+ * ATK implementors but by ATK consumers.
  *
  * Removes the specified event listener
  **/
@@ -293,7 +456,10 @@ atk_add_key_event_listener (AtkKeySnoopFunc listener, gpointer data)
  * atk_remove_key_event_listener:
  * @listener_id: the id of the event listener to remove
  *
- * Removes the specified event listener
+ * @listener_id is the value returned by #atk_add_key_event_listener
+ * when you registered that event listener.
+ *
+ * Removes the specified event listener.
  **/
 void
 atk_remove_key_event_listener (guint listener_id)
@@ -411,3 +577,15 @@ atk_get_version (void)
   return VERSION;
 }
 
+static void
+atk_util_class_init (AtkUtilClass *klass)
+{
+  klass->add_global_event_listener = atk_util_real_add_global_event_listener;
+  klass->remove_global_event_listener = atk_util_real_remove_global_event_listener;
+  klass->get_root = NULL;
+  klass->get_toolkit_name = NULL;
+  klass->get_toolkit_version = NULL;
+
+  listener_list = g_hash_table_new_full (g_int_hash, g_int_equal, NULL,
+                                         g_free);
+}
