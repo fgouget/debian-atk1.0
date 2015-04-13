@@ -4,6 +4,7 @@ GPATH = $(srcdir)
 
 include $(INTROSPECTION_MAKEFILE)
 INTROSPECTION_GIRS =
+INTROSPECTION_SCANNER_ENV = CC="$(CC)"
 
 CLEANFILES =
 
@@ -19,7 +20,8 @@ AM_CPPFLAGS = \
 	-DATK_DISABLE_DEPRECATED	\
 	-DATK_COMPILATION	\
 	-DATK_LOCALEDIR="\"$(datadir)/locale\""	\
-	$(DEP_CFLAGS)
+	$(DEP_CFLAGS)	\
+	$(ATK_HIDDEN_VISIBILITY_CFLAGS)
 
 lib_LTLIBRARIES = libatk-1.0.la
 
@@ -135,9 +137,9 @@ atk-enum-types.h: s-enum-types-h
 	@true
 s-enum-types-h: @REBUILD@ $(atk_headers) Makefile
 	$(AM_V_GEN) ( cd $(srcdir) && $(GLIB_MKENUMS) \
-			--fhead "#if defined(ATK_DISABLE_SINGLE_INCLUDES) && !defined (__ATK_H_INSIDE__) && !defined (ATK_COMPILATION)\n#error \"Only <atk/atk.h> can be included directly.\"\n#endif\n\n#ifndef __ATK_ENUM_TYPES_H__\n#define __ATK_ENUM_TYPES_H__\n\n#include <glib-object.h>\n\nG_BEGIN_DECLS\n" \
+			--fhead "#if defined(ATK_DISABLE_SINGLE_INCLUDES) && !defined (__ATK_H_INSIDE__) && !defined (ATK_COMPILATION)\n#error \"Only <atk/atk.h> can be included directly.\"\n#endif\n\n#ifndef __ATK_ENUM_TYPES_H__\n#define __ATK_ENUM_TYPES_H__\n\n#include <atk/atkversion.h>\n#include <glib-object.h>\n\nG_BEGIN_DECLS\n" \
 			--fprod "/* enumerations from \"@filename@\" */\n" \
-			--vhead "GType @enum_name@_get_type (void);\n#define ATK_TYPE_@ENUMSHORT@ (@enum_name@_get_type())\n"         \
+			--vhead "ATK_AVAILABLE_IN_ALL\nGType @enum_name@_get_type (void);\n#define ATK_TYPE_@ENUMSHORT@ (@enum_name@_get_type())\n"         \
 			--ftail "G_END_DECLS\n\n#endif /* __ATK_ENUM_TYPES_H__ */" \
 		$(atk_headers) ) > tmp-atk-enum-types.h \
 	&& (cmp -s tmp-atk-enum-types.h atk-enum-types.h || cp tmp-atk-enum-types.h atk-enum-types.h ) \
@@ -148,7 +150,7 @@ atk-enum-types.c: s-enum-types-c
 	@true
 s-enum-types-c: @REBUILD@ $(atk_headers) Makefile
 	$(AM_V_GEN) ( cd $(srcdir) && $(GLIB_MKENUMS) \
-			--fhead "#include <atk.h>" \
+			--fhead "#include \"config.h\"\n\n#include <atk.h>" \
 			--fprod "\n/* enumerations from \"@filename@\" */" \
 			--vhead "GType\n@enum_name@_get_type (void)\n{\n  static GType etype = 0;\n  if (etype == 0) {\n    static const G@Type@Value values[] = {"     \
 			--vprod "      { @VALUENAME@, \"@VALUENAME@\", \"@valuenick@\" }," \
@@ -170,7 +172,7 @@ introspection_generated_sources = \
 
 Atk-1.0.gir: libatk-1.0.la Makefile
 Atk_1_0_gir_INCLUDES = GObject-2.0
-Atk_1_0_gir_CFLAGS = $(AM_CPPFLAGS)
+Atk_1_0_gir_CFLAGS = $(AM_CPPFLAGS) -I ..
 Atk_1_0_gir_LIBS = libatk-1.0.la
 Atk_1_0_gir_SCANNERFLAGS = --pkg-export atk --warn-all --c-include "atk/atk.h"
 Atk_1_0_gir_FILES = \
@@ -190,42 +192,14 @@ endif
 # ---------- Win32 stuff ----------
 
 if OS_WIN32
-libatk_1_0_la_LDFLAGS += -export-symbols atk.def -no-undefined -Wl,atk-win32-res.o
-libatk_1_0_la_DEPENDENCIES = atk-win32-res.o atk.def
-
-install-def-file:
-	$(INSTALL) atk.def $(DESTDIR)$(libdir)/atk-1.0.def
-uninstall-def-file:
-	-rm $(DESTDIR)$(libdir)/atk-1.0.def
-else
-install-def-file:
-uninstall-def-file:
+libatk_1_0_la_LDFLAGS += -no-undefined -Wl,atk-win32-res.o
+libatk_1_0_la_DEPENDENCIES = atk-win32-res.o
 endif
 
 atk-win32-res.o: atk.rc
 	$(WINDRES) $< $@
 
-if MS_LIB_AVAILABLE
-noinst_DATA = atk-$(ATK_API_VERSION).lib
-
-install-ms-lib:
-	$(INSTALL) atk-$(ATK_API_VERSION).lib $(DESTDIR)$(libdir)
-
-uninstall-ms-lib:
-	-rm $(DESTDIR)$(libdir)/atk-$(ATK_API_VERSION).lib
-else
-install-ms-lib:
-uninstall-ms-lib:
-endif
-
-atk.def: atk.symbols
-	(echo -e EXPORTS; $(CPP) -P -DINCLUDE_VARIABLES -DG_OS_WIN32 -DALL_FILES - <$(srcdir)/atk.symbols | sed -e '/^$$/d' -e 's/^/	/' -e 's/G_GNUC_[^ ]*//g') > atk.def
-
-atk-$(ATK_API_VERSION).lib: libatk-$(ATK_API_VERSION).la atk.def
-	lib -machine:$(LIB_EXE_MACHINE_FLAG) -name:libatk-$(ATK_API_VERSION)-$(LT_CURRENT_MINUS_AGE).dll -def:atk.def -out:$@
-
-
-EXTRA_DIST = atk.symbols atk.rc.in atkmarshal.list atk.rc atkversion.h.in
+EXTRA_DIST = atk.rc.in atkmarshal.list atk.rc atkversion.h.in
 
 DISTCLEANFILES = \
   stamp-atkmarshal.h stamp-atkmarshal.c \
@@ -235,7 +209,3 @@ distclean-local:
 	if test $(srcdir) = .; then :; else \
 	  rm -f atkmarshal.h atkmarshal.c atk-enum-types.h atk-enum-types.c; \
 	fi
-
-install-data-local: install-ms-lib install-def-file
-
-uninstall-local: uninstall-ms-lib uninstall-def-file

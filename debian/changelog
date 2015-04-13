@@ -1,3 +1,18 @@
+atk1.0 (2.14.0-1) unstable; urgency=medium
+
+  * New upstream release.
+  * Upload to unstable.
+
+ -- Andreas Henriksson <andreas@fatal.se>  Fri, 26 Sep 2014 16:05:57 +0200
+
+atk1.0 (2.13.90-1) experimental; urgency=medium
+
+  * New upstream release
+  * debian/libatk1.0-0.symbols:
+    + Updated. Dropped some private symbols
+
+ -- Sjoerd Simons <sjoerd@debian.org>  Sun, 07 Sep 2014 13:40:46 +0200
+
 atk1.0 (2.12.0-1) unstable; urgency=medium
 
   * New upstream release.

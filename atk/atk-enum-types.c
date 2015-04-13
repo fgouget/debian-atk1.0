@@ -1,6 +1,8 @@
 
 
 
+#include "config.h"
+
 #include <atk.h>
 
 /* enumerations from "atkhyperlink.h" */
