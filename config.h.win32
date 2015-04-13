@@ -82,7 +82,7 @@
 #define PACKAGE_NAME "atk"
 
 /* Define to the full name and version of this package. */
-#define PACKAGE_STRING "atk 2.12.0"
+#define PACKAGE_STRING "atk 2.14.0"
 
 /* Define to the one symbol short name of this package. */
 #define PACKAGE_TARNAME "atk"
@@ -91,10 +91,17 @@
 #define PACKAGE_URL "http://www.gtk.org/"
 
 /* Define to the version of this package. */
-#define PACKAGE_VERSION "2.12.0"
+#define PACKAGE_VERSION "2.14.0"
 
 /* Define to 1 if you have the ANSI C header files. */
 #define STDC_HEADERS 1
 
 /* Version number of package */
-#define VERSION "2.12.0"
+#define VERSION "2.14.0"
+
+/* defines how to decorate public symbols while building */
+#ifdef _MSC_VER
+#define _ATK_EXTERN __declspec (dllexport) extern
+#else
+#define _ATK_EXTERN __attribute__((visibility("default"))) __declspec (dllexport) extern
+#endif

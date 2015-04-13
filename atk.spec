@@ -1,6 +1,6 @@
 Name:		atk
 Summary:	Accessibility Toolkit
-Version:	2.12.0
+Version:	2.14.0
 Release:	1
 License:	LGPL
 Group:		Development/Libraries

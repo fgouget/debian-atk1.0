@@ -1,3 +1,65 @@
+Changes in version 2.14.0:
+==========================
+
+Translations:
+Dušan Kazik (sk), Maria Mavridou (el), Yuri Myasoedov (ru)
+
+
+Changes in version 2.13.90:
+===========================
+*
+* GObject-introspection: some small changes needed by the MINGW project.
+* Doap file updated See [1]
+
+Contributors:
+  Alexpux, Piotr Drąg, Olav Vitters
+
+Translations:
+Christian Kirbach (de), Lasse Liehu (fi), ngoswami (as)
+
+[1] https://mail.gnome.org/archives/release-team/2014-July/msg00045.html
+
+Changes in version 2.13.3:
+==========================
+*
+* Bug 729752: introspection: add many missing Returns: (nullable) annotations
+* Bug 730859: atk/Makefile.am: Stop reading atk.def
+* Fix GIR scanning for srcdir != buildir
+* Visual Studio support
+   * MSVC 2010+ Projects: Update "Installation" Process
+   * Build: Add Build Support for Visual Studio 2013
+   * MSVC 2012/2013 Support: Update Property Sheet Creation
+* Documentation:
+   * Bug 729922: adding further explanation on atk_add_global_event_listener
+
+Contributors:
+  Benjamin Gilbert, Chun-wei Fan, Evan Nemerson, Alejandro Piñeiro
+  Iglesias, Owen W. Taylor
+
+Translation:
+  genodeftest (de), Pau Iranzo (ca), Carles Ferrando (ca@valencia), Yosef Or Boczko (he)
+
+Changes in version 2.13.2:
+==========================
+
+During GNOME 3.13.2 cycle an ATK 2.13.2 release was rolled out. But
+unfourtunately, it was not pushed on master, so got lost. All their
+changes are included on 2.13.3.
+
+
+Changes in version 2.13.1:
+==========================
+*
+* Bug 728031: Use visibility attributes/__declspec (dllexport) to
+  export public symbols
+* Bug 691991: Add Simple Support for Visual Studio 2012
+
+Contributors:
+  Chun-wei Fan
+
+Translation
+  Inaki Larranaga Murgoitio (eu), Matej Urbančič (sl), marablack3 (el)
+
 Changes in version 2.12.0:
 ==========================
 

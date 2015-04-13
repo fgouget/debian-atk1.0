@@ -17,6 +17,7 @@
  * Boston, MA 02111-1307, USA.
  */
 
+#include "config.h"
 
 #include "atkcomponent.h"
 
@@ -227,7 +228,8 @@ atk_component_contains (AtkComponent    *component,
  * Gets a reference to the accessible child, if one exists, at the
  * coordinate point specified by @x and @y.
  *
- * Returns: (transfer full): a reference to the accessible child, if one exists
+ * Returns: (nullable) (transfer full): a reference to the accessible
+ * child, if one exists
  **/
 AtkObject*
 atk_component_ref_accessible_at_point (AtkComponent    *component,

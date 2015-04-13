@@ -17,6 +17,8 @@
  * Boston, MA 02111-1307, USA.
  */
 
+#include "config.h"
+
 #include <glib-object.h>
 
 #include "atkobject.h"
@@ -299,8 +301,8 @@ atk_state_set_and_sets (AtkStateSet  *set,
  *
  * Constructs the union of the two sets.
  *
- * Returns: (transfer full): a new #AtkStateSet which is the union of the two
- * sets, returning %NULL is empty.
+ * Returns: (nullable) (transfer full): a new #AtkStateSet which is
+ * the union of the two sets, returning %NULL is empty.
  **/
 AtkStateSet*
 atk_state_set_or_sets (AtkStateSet  *set,
